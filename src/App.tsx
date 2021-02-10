@@ -1,15 +1,16 @@
 import React from 'react';
-import logo from './logo.svg';
 import './App.css';
 import Canvas from './components/Canvas';
+import FilePicker from './components/FilePicker';
 
 
 function App() {
   return (
     <div className="App">
 
-      <Canvas/>
-
+      <Canvas />
+      <FilePicker />
+      
     </div>
   );
 }
