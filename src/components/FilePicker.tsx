@@ -2,18 +2,23 @@ import React, { useRef, useEffect, useState } from 'react';
 
 import './FilePicker.css';
 
-const ACCEPT_TYPES = ".mp4"
+type FilePickerProps = {
+    setFileList: (f: FileList | null) => void,
+    accept_types?: string;
+};
 
-function FilePicker() {
+function FilePicker({ setFileList, accept_types = "" }: FilePickerProps) {
 
     const ref = useRef<HTMLInputElement>(null);
 
     return (
         <div className="FilePicker">
-            <input 
+            <input
                 ref={ref}
                 type="file"
-                accept=".mp4"/>
+                accept={accept_types}
+                onChange={_ => setFileList(ref.current!.files)}
+            />
         </div>
     );
 }

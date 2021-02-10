@@ -6,7 +6,9 @@ const CANVAS_W = 1280;
 const CANVAS_H = 720;
 const POINT_RADIUS = 5;
 
-function Canvas() {
+type CanvasProps = { img: CanvasImageSource; };
+
+function Canvas({ img }: CanvasProps) {
 
     const [points, setPoints] = useState<[number, number][]>([]);
 
@@ -20,16 +22,22 @@ function Canvas() {
             return;
         }
 
-        context.fillStyle = '#fff';
-        context.fillRect(0, 0, canvas.width, canvas.height);
+        if (img) {
+            context.drawImage(img, 0, 0);
+        } else {
+            context.fillStyle = '#fff';
+            context.fillRect(0, 0, canvas.width, canvas.height);
+        }
 
+        context.strokeStyle = '#f00';
+        context.fillStyle = '#00f';
         drawPath(context, points, true);
 
         if (points[0] && mouse.x && mouse.y) {
             drawPath(context, [points[0], [mouse.x, mouse.y]]);
         }
 
-    }, [points, mouse]);
+    }/* , [points, mouse] */);
 
     const addPoint = () => {
         if (!mouse.x || !mouse.y) {
@@ -54,22 +62,19 @@ function Canvas() {
     };
 
     const drawPoint = (canvasCtx: CanvasRenderingContext2D, point: [number, number]) => {
-        const oldFill = canvasCtx.fillStyle;
-        canvasCtx.fillStyle = '#000';
         canvasCtx.beginPath();
         canvasCtx.arc(point[0], point[1], POINT_RADIUS, 0, 2 * 3.15);
         canvasCtx.closePath();
         canvasCtx.fill();
-        canvasCtx.fillStyle = oldFill;
     };
 
     return (
         <div className="Canvas">
-        <canvas
-            ref={ref}
-            onClick={addPoint}
-            width={CANVAS_W}
-            height={CANVAS_H} />
+            <canvas
+                ref={ref}
+                onClick={addPoint}
+                width={CANVAS_W}
+                height={CANVAS_H} />
         </div>
     );
 }

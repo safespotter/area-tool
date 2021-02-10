@@ -4,3 +4,8 @@
   min-height: 100vh;
   padding: 12pt;
 }
+
+.App video {
+  width: 300px;
+  height: 100px;
+}
