@@ -3,11 +3,11 @@ import React, { useRef, useEffect, useState } from 'react';
 import './FilePicker.css';
 
 type FilePickerProps = {
-    setFileList: (f: FileList | null) => void,
+    setFile: (f: File | null) => void,
     accept_types?: string;
 };
 
-function FilePicker({ setFileList, accept_types = "" }: FilePickerProps) {
+function FilePicker({ setFile, accept_types = "" }: FilePickerProps) {
 
     const ref = useRef<HTMLInputElement>(null);
 
@@ -17,7 +17,7 @@ function FilePicker({ setFileList, accept_types = "" }: FilePickerProps) {
                 ref={ref}
                 type="file"
                 accept={accept_types}
-                onChange={_ => setFileList(ref.current!.files)}
+                onChange={_ => setFile(ref.current?.files?.item(0) ?? null)}
             />
         </div>
     );

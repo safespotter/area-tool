@@ -1,30 +1,25 @@
 import React, { useEffect, useRef, useState } from 'react';
 import './App.css';
-import Canvas from './components/Canvas';
+import VideoCanvas from './components/VideoCanvas';
 import FilePicker from './components/FilePicker';
 
 
 function App() {
 
-    const [fileList, setFileList] = useState<FileList | null>(null);
-    const videoRef = useRef<HTMLVideoElement>(null)
+    const [file, setFile] = useState<File | null>(null);
+    const [videoSrc, setVideoSrc] = useState<string>("");
 
     useEffect(() => {
-        if (!fileList || !videoRef.current) {
-            return
+        if (file) {
+            const source = URL.createObjectURL(file)
+            setVideoSrc(source)
         }
-
-        const source = URL.createObjectURL(fileList[0])
-        videoRef.current.src = source
-
-    }, [fileList])
-
+    }, [file])
+    
     return (
         <div className="App">
-            <video ref={videoRef} controls/>
-            <Canvas img={videoRef.current as CanvasImageSource} />
-            <FilePicker setFileList={setFileList} accept_types="video/*" />
-
+            <VideoCanvas source={videoSrc} />
+            <FilePicker setFile={setFile} accept_types="video/*" />
         </div>
     );
 }

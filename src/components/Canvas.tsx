@@ -6,7 +6,9 @@ const CANVAS_W = 1280;
 const CANVAS_H = 720;
 const POINT_RADIUS = 5;
 
-type CanvasProps = { img: CanvasImageSource; };
+type CanvasProps = {
+    img: CanvasImageSource | null;
+};
 
 function Canvas({ img }: CanvasProps) {
 
@@ -23,7 +25,7 @@ function Canvas({ img }: CanvasProps) {
         }
 
         if (img) {
-            context.drawImage(img, 0, 0);
+            context.drawImage(img, 0, 0, CANVAS_W, CANVAS_H);
         } else {
             context.fillStyle = '#fff';
             context.fillRect(0, 0, canvas.width, canvas.height);
@@ -37,11 +39,11 @@ function Canvas({ img }: CanvasProps) {
             drawPath(context, [points[0], [mouse.x, mouse.y]]);
         }
 
-    }/* , [points, mouse] */);
+    });
 
     const addPoint = () => {
         if (!mouse.x || !mouse.y) {
-            throw ReferenceError("Cannot get mouse position!");
+            return;
         }
         setPoints([[mouse.x, mouse.y], ...points]);
     };
@@ -74,7 +76,8 @@ function Canvas({ img }: CanvasProps) {
                 ref={ref}
                 onClick={addPoint}
                 width={CANVAS_W}
-                height={CANVAS_H} />
+                height={CANVAS_H} 
+            />
         </div>
     );
 }
