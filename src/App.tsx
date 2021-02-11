@@ -11,6 +11,7 @@ export default function App() {
     const [file, setFile] = useState<File | null>(null);
     const [videoSrc, setVideoSrc] = useState<string>("");
     const [quadList, setQuadList] = useState<Shape[]>([]);
+    const [selected, setSelected] = useState<Shape | null>(null);
     const [tool, setTool] = useState<Tool>(Tool.ADD);
 
     useEffect(() => {
@@ -27,6 +28,8 @@ export default function App() {
                 quads={quadList}
                 newQuad={(quad: Shape) => { setQuadList([quad, ...quadList]); }}
                 tool={tool}
+                selected={selected}
+                setSelected={setSelected}
             />
             <FilePicker setFile={setFile} accept_types="video/*" />
             <ToolSelector
