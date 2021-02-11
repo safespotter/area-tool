@@ -1,19 +1,16 @@
 import React, { useEffect, useRef } from 'react';
 import { Shape } from '../utilities/types';
-import Canvas from './Canvas';
+import Canvas, { CanvasProps } from './Canvas';
 
 import './VideoCanvas.css';
 
-type VideoCanvasProps = {
+interface VideoCanvasProps extends Omit<CanvasProps, "img"> {
     source: string;
-    quads: Shape[];
-    newQuad: (quad: Shape) => void;
 };
 
-export default function VideoCanvas({ source, quads, newQuad }: VideoCanvasProps) {
+export default function VideoCanvas({ source, quads, newQuad, tool }: VideoCanvasProps) {
 
     const videoRef = useRef<HTMLVideoElement>(null);
-    const sliderRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         if (videoRef.current && source) {
@@ -21,13 +18,6 @@ export default function VideoCanvas({ source, quads, newQuad }: VideoCanvasProps
         }
     }, [source]);
 
-    const getVideoPos = () => {
-        if (!videoRef.current) {
-            return 0;
-        }
-
-        return videoRef.current.currentTime / videoRef.current.duration * 100;
-    };
     const setVideoPos = (percentage: number) => {
         if (!videoRef.current) {
             return;
@@ -43,6 +33,7 @@ export default function VideoCanvas({ source, quads, newQuad }: VideoCanvasProps
                 img={source ? videoRef.current : null}
                 quads={quads}
                 newQuad={newQuad}
+                tool={tool}
             />
             <input className="slider"
                 type="range"

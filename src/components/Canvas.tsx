@@ -1,21 +1,23 @@
 import React, { useRef, useState, useEffect, ComponentProps } from 'react';
 import useMouse from '@react-hook/mouse-position';
 import './Canvas.css';
-import { Point, Shape } from '../utilities/types';
+import { Point, Shape, Tool } from '../utilities/types';
 
 const CANVAS_W = 1280;
 const CANVAS_H = 720;
 const POINT_RADIUS = 5;
 
-type CanvasProps = {
+export interface CanvasProps {
     img: CanvasImageSource | null;
     quads: Shape[];
     newQuad: (quad: Shape) => void;
+    tool: Tool;
 };
 
-export default function Canvas({ img, quads, newQuad }: CanvasProps) {
+export default function Canvas({ img, quads, newQuad, tool }: CanvasProps) {
 
     const [points, setPoints] = useState<Shape>([]);
+    const [dragging, setDragging] = useState<boolean>(false);
 
     const ref = useRef<HTMLCanvasElement>(null);
     const mouse = useMouse(ref);
@@ -89,11 +91,28 @@ export default function Canvas({ img, quads, newQuad }: CanvasProps) {
         canvasCtx.fill();
     };
 
+    const onMouseDown = () => {
+        switch (tool) {
+            case Tool.ADD:
+                addPoint();
+                break;
+            case Tool.SELECT:
+
+                break;
+            default:
+                throw Error("No tool selected???");
+        }
+    };
+    const onMouseUp = () => {
+        setDragging(false);
+    };
+
     return (
         <div className="Canvas">
             <canvas
                 ref={ref}
-                onClick={addPoint}
+                onMouseDown={onMouseDown}
+                onMouseUp={onMouseUp}
                 width={CANVAS_W}
                 height={CANVAS_H}
             />

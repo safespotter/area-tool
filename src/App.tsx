@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import './App.css';
 import VideoCanvas from './components/VideoCanvas';
 import FilePicker from './components/FilePicker';
-import { Shape } from './utilities/types';
+import { Shape, Tool } from './utilities/types';
 import ToolSelector from './components/ToolSelector';
 
 
@@ -11,6 +11,7 @@ export default function App() {
     const [file, setFile] = useState<File | null>(null);
     const [videoSrc, setVideoSrc] = useState<string>("");
     const [quadList, setQuadList] = useState<Shape[]>([]);
+    const [tool, setTool] = useState<Tool>(Tool.ADD);
 
     useEffect(() => {
         if (file) {
@@ -25,8 +26,14 @@ export default function App() {
                 source={videoSrc}
                 quads={quadList}
                 newQuad={(quad: Shape) => { setQuadList([quad, ...quadList]); }}
+                tool={tool}
             />
             <FilePicker setFile={setFile} accept_types="video/*" />
+            <ToolSelector
+                value={tool}
+                onAdd={() => setTool(Tool.ADD)}
+                onSelect={() => setTool(Tool.SELECT)}
+            />
         </div>
     );
 }
