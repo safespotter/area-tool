@@ -5,6 +5,7 @@ import FilePicker from './components/FilePicker';
 import { Point, Shape, Tool } from './utilities/types';
 import ToolSelector from './components/ToolSelector';
 import Canvas from './components/Canvas';
+import Inspector from './components/Inspector';
 
 
 export default function App() {
@@ -54,6 +55,9 @@ export default function App() {
                 value={tool}
                 onAdd={() => setTool(Tool.ADD)}
                 onSelect={() => setTool(Tool.SELECT)}
+            />
+            <Inspector
+                target={quadList[selected]}
             />
         </div>
     );
