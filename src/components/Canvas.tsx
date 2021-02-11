@@ -1,6 +1,7 @@
 import React, { useRef, useState, useEffect, ComponentProps } from 'react';
 import useMouse from '@react-hook/mouse-position';
 import './Canvas.css';
+import { Point, Shape } from '../utilities/types';
 
 const CANVAS_W = 1280;
 const CANVAS_H = 720;
@@ -8,11 +9,13 @@ const POINT_RADIUS = 5;
 
 type CanvasProps = {
     img: CanvasImageSource | null;
+    quads: Shape[];
+    newQuad: (quad: Shape) => void;
 };
 
-function Canvas({ img }: CanvasProps) {
+export default function Canvas({ img, quads, newQuad }: CanvasProps) {
 
-    const [points, setPoints] = useState<[number, number][]>([]);
+    const [points, setPoints] = useState<Shape>([]);
 
     const ref = useRef<HTMLCanvasElement>(null);
     const mouse = useMouse(ref);
@@ -24,6 +27,7 @@ function Canvas({ img }: CanvasProps) {
             return;
         }
 
+        // Background
         if (img) {
             context.drawImage(img, 0, 0, CANVAS_W, CANVAS_H);
         } else {
@@ -31,12 +35,20 @@ function Canvas({ img }: CanvasProps) {
             context.fillRect(0, 0, canvas.width, canvas.height);
         }
 
+        // Finished Quads
         context.strokeStyle = '#f00';
         context.fillStyle = '#00f';
-        drawPath(context, points, true);
+        for (const quad of quads) {
+            drawPath(context, [...quad, quad[0]], true);
+        }
 
-        if (points[0] && mouse.x && mouse.y) {
-            drawPath(context, [points[0], [mouse.x, mouse.y]]);
+        // New Quad
+        if (points && mouse.x && mouse.y) {
+            let path = [[mouse.x, mouse.y] as Point, ...points];
+            if (points.length === 3) {
+                path = [points[2], ...path];
+            }
+            drawPath(context, path, true);
         }
 
     });
@@ -45,7 +57,14 @@ function Canvas({ img }: CanvasProps) {
         if (!mouse.x || !mouse.y) {
             return;
         }
-        setPoints([[mouse.x, mouse.y], ...points]);
+        const updatedShape = [[mouse.x, mouse.y] as Point, ...points];
+
+        if (updatedShape.length === 4) {
+            newQuad(updatedShape);
+            setPoints([]);
+        } else {
+            setPoints(updatedShape);
+        }
     };
 
     const drawPath = (canvasCtx: CanvasRenderingContext2D, points: [number, number][], f_drawPoints = false) => {
@@ -63,7 +82,7 @@ function Canvas({ img }: CanvasProps) {
         }
     };
 
-    const drawPoint = (canvasCtx: CanvasRenderingContext2D, point: [number, number]) => {
+    const drawPoint = (canvasCtx: CanvasRenderingContext2D, point: Point) => {
         canvasCtx.beginPath();
         canvasCtx.arc(point[0], point[1], POINT_RADIUS, 0, 2 * 3.15);
         canvasCtx.closePath();
@@ -76,13 +95,8 @@ function Canvas({ img }: CanvasProps) {
                 ref={ref}
                 onClick={addPoint}
                 width={CANVAS_W}
-                height={CANVAS_H} 
+                height={CANVAS_H}
             />
         </div>
     );
 }
-
-
-
-
-export default Canvas;

@@ -1,21 +1,23 @@
 import React, { useEffect, useRef } from 'react';
+import { Shape } from '../utilities/types';
 import Canvas from './Canvas';
 
 import './VideoCanvas.css';
 
 type VideoCanvasProps = {
     source: string;
+    quads: Shape[];
+    newQuad: (quad: Shape) => void;
 };
 
-function VideoCanvas({ source }: VideoCanvasProps) {
+export default function VideoCanvas({ source, quads, newQuad }: VideoCanvasProps) {
 
     const videoRef = useRef<HTMLVideoElement>(null);
     const sliderRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
-        if (videoRef.current) {
+        if (videoRef.current && source) {
             videoRef.current.src = source;
-
         }
     }, [source]);
 
@@ -37,16 +39,18 @@ function VideoCanvas({ source }: VideoCanvasProps) {
 
     return (
         <div className="VideoCanvas">
-            <video ref={videoRef} hidden />
-            <Canvas img={videoRef.current} />
+            <Canvas
+                img={source ? videoRef.current : null}
+                quads={quads}
+                newQuad={newQuad}
+            />
             <input className="slider"
                 type="range"
                 min="0"
                 max="100"
                 onChange={ev => { setVideoPos(+ev.target.value); }}
             />
+            <video ref={videoRef} hidden />
         </div>
     );
 }
-
-export default VideoCanvas;
