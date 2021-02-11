@@ -16,9 +16,10 @@ export interface CanvasProps {
     selected: number;
     setSelected: (index: number) => void;
     moveSelected: (vector: Point) => void;
+    slider?: number;
 };
 
-export default function Canvas({ img, quads, newQuad, tool, selected, setSelected, moveSelected }: CanvasProps) {
+export default function Canvas({ img, quads, newQuad, tool, selected, setSelected, moveSelected, slider }: CanvasProps) {
 
     const [points, setPoints] = useState<Shape>([]);
     const [dragging, setDragging] = useState<boolean>(false);
@@ -80,7 +81,7 @@ export default function Canvas({ img, quads, newQuad, tool, selected, setSelecte
 
             setOldMouse([mouse.x, mouse.y]);
         }
-    }, [img, quads, tool, mouse, selected, points]);
+    }, [img, quads, tool, mouse, selected, points, slider]);
 
     const addPoint = () => {
         if (!mouse.x || !mouse.y) {
