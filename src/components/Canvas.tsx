@@ -2,7 +2,7 @@ import React, { useRef, useState, useEffect, ComponentProps } from 'react';
 import useMouse from '@react-hook/mouse-position';
 import './Canvas.css';
 import { Point, Shape, Tool } from '../utilities/types';
-import { findShape } from '../utilities/shapes';
+import { findShapeIndex } from '../utilities/shapes';
 
 const CANVAS_W = 1280;
 const CANVAS_H = 720;
@@ -13,14 +13,16 @@ export interface CanvasProps {
     quads: Shape[];
     newQuad: (quad: Shape) => void;
     tool: Tool;
-    selected: Shape | null;
-    setSelected: (s: Shape | null) => void;
+    selected: number;
+    setSelected: (index: number) => void;
+    moveSelected: (vector: Point) => void;
 };
 
-export default function Canvas({ img, quads, newQuad, tool, selected, setSelected }: CanvasProps) {
+export default function Canvas({ img, quads, newQuad, tool, selected, setSelected, moveSelected }: CanvasProps) {
 
     const [points, setPoints] = useState<Shape>([]);
     const [dragging, setDragging] = useState<boolean>(false);
+    const [oldMouse, setOldMouse] = useState<Point | null>(null);
 
     const ref = useRef<HTMLCanvasElement>(null);
     const mouse = useMouse(ref);
@@ -33,10 +35,7 @@ export default function Canvas({ img, quads, newQuad, tool, selected, setSelecte
         }
 
         if (tool === Tool.ADD) {
-            setSelected(null);
-        }
-        if (tool === Tool.SELECT) {
-            setPoints([]);
+            setSelected(-1);
         }
 
         // Background
@@ -54,22 +53,34 @@ export default function Canvas({ img, quads, newQuad, tool, selected, setSelecte
             drawPath(context, [...quad, quad[0]], true);
         }
 
-        // New Quad
-        if (points && mouse.x && mouse.y) {
-            let path = [[mouse.x, mouse.y] as Point, ...points];
-            if (points.length === 3) {
-                path = [points[2], ...path];
-            }
-            drawPath(context, path, true);
-        }
-
         // Selected Quad
-        if (selected && selected[0]) {
+        if (selected >= 0 && quads[selected]) {
+            const quad = quads[selected];
             context.strokeStyle = '#ff0';
             context.fillStyle = '#0ff';
-            drawPath(context, [...selected, selected[0]], true);
+            drawPath(context, [...quad, quad[0]], true);
         }
-    });
+
+        if (mouse.x && mouse.y) {
+
+            // New Quad
+            if (points) {
+                let path = [[mouse.x, mouse.y] as Point, ...points];
+                if (points.length === 3) {
+                    path = [points[2], ...path];
+                }
+                drawPath(context, path, true);
+            }
+
+            // Drag
+            if (dragging && oldMouse) {
+                const movement = [mouse.x - oldMouse[0], mouse.y - oldMouse[1]] as Point;
+                moveSelected(movement);
+            }
+
+            setOldMouse([mouse.x, mouse.y]);
+        }
+    }, [img, quads, tool, mouse, selected, points]);
 
     const addPoint = () => {
         if (!mouse.x || !mouse.y) {
@@ -108,8 +119,8 @@ export default function Canvas({ img, quads, newQuad, tool, selected, setSelecte
     };
 
     const handleSelect = () => {
-        const target = findShape([mouse.x, mouse.y] as Point, quads);
-        if (target === selected) {
+        const target = findShapeIndex([mouse.x, mouse.y] as Point, quads);
+        if (target >= 0 && target === selected) {
             setDragging(true);
         } else {
             setSelected(target);

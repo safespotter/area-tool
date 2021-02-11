@@ -1,11 +1,11 @@
 import { SSL_OP_SSLEAY_080_CLIENT_DH_BUG } from 'constants';
 import { Point, Shape } from './types';
 
-export function findShape(target: Point, shapes: Shape[]) {
-    for (const shape of shapes) {
-        if (pointInShape(target, shape)) return shape;
+export function findShapeIndex(target: Point, shapes: Shape[]) {
+    for (let i = 0; i < shapes.length; i++) {
+        if (pointInShape(target, shapes[i])) return i;
     }
-    return null;
+    return -1;
 }
 
 export function pointInShape(p: Point, s: Shape) {

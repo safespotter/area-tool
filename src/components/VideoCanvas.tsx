@@ -8,7 +8,7 @@ interface VideoCanvasProps extends Omit<CanvasProps, "img"> {
     source: string;
 };
 
-export default function VideoCanvas({ source, quads, newQuad, tool, selected, setSelected }: VideoCanvasProps) {
+export default function VideoCanvas({ source, quads, newQuad, tool, selected, setSelected, moveSelected }: VideoCanvasProps) {
 
     const videoRef = useRef<HTMLVideoElement>(null);
 
@@ -36,6 +36,7 @@ export default function VideoCanvas({ source, quads, newQuad, tool, selected, se
                 tool={tool}
                 selected={selected}
                 setSelected={setSelected}
+                moveSelected={moveSelected}
             />
             <input className="slider"
                 type="range"
