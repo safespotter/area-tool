@@ -2,11 +2,12 @@ import React, { useRef, useState, useEffect, ComponentProps } from 'react';
 import useMouse from '@react-hook/mouse-position';
 import './Canvas.css';
 import { Point, Shape, Tool } from '../utilities/types';
-import { findShapeIndex } from '../utilities/shapes';
+import { distancePointToPoint, projectPointToSegment, findPointIndexInShape } from '../utilities/shapes';
 
 const CANVAS_W = 1280;
 const CANVAS_H = 720;
 const POINT_RADIUS = 5;
+const SNAP_DISTANCE = 50;
 
 export interface CanvasProps {
     img: CanvasImageSource | null;
@@ -70,8 +71,9 @@ export default function Canvas({
         if (mouse.x && mouse.y) {
 
             // New Quad
-            if (points) {
-                let path = [[mouse.x, mouse.y] as Point, ...points];
+            if (points && tool === Tool.ADD) {
+                const pos = snapToShapes([mouse.x, mouse.y], quads);
+                let path = [pos, ...points];
                 if (points.length === 3) {
                     path = [points[2], ...path];
                 }
@@ -88,11 +90,54 @@ export default function Canvas({
         }
     }, [img, quads, tool, mouse, selected, points, slider]);
 
+    const snapToShapes = (pos: Point, shapes: Shape[]) => {
+        let [minDist, newPoint] = shapes.reduce(([dist, point]: [number, Point | null], s) => {
+
+            // find the most close point in each shape with his distance
+            let [d, p] = s.reduce(([dist, point]: [number, Point | null], p1, i, s) => {
+
+                const p2 = s[(i + 1) % s.length];
+                console.log(i, p1, p2);
+                let proj = projectPointToSegment(pos, [p1, p2]);
+                let d, p;
+                // if we found a projection it is the closest point
+                if (proj) {
+                    d = distancePointToPoint(pos, proj);
+                    p = proj;
+                }
+                // otherwise check wich end of the segment is the closest and pick that one
+                else {
+                    const d1 = distancePointToPoint(pos, p1);
+                    const d2 = distancePointToPoint(pos, p2);
+                    [d, p] = d1 < d2 ? [d1, p1] : [d2, p2];
+                }
+
+                // confront it with the previous results
+                if (d < dist || dist === -1) return [d, p];
+                else return [dist, point];
+            }, [-1, null]);
+
+            // confront it with the previous results
+            if (d < dist || dist === -1) return [d, p];
+            else return [dist, point];
+        }, [-1, null]);
+
+        if (newPoint && minDist < SNAP_DISTANCE) {
+            pos = newPoint;
+        }
+        return pos;
+    };
+
     const addPoint = () => {
         if (!mouse.x || !mouse.y) {
             return;
         }
-        const updatedShape = [[mouse.x, mouse.y] as Point, ...points];
+
+        let pos: Point = [mouse.x, mouse.y];
+
+        pos = snapToShapes(pos, quads);
+
+        const updatedShape = [pos, ...points];
 
         if (updatedShape.length === 4) {
             newQuad(updatedShape);
@@ -125,7 +170,7 @@ export default function Canvas({
     };
 
     const handleSelect = () => {
-        const target = findShapeIndex([mouse.x, mouse.y] as Point, quads);
+        const target = findPointIndexInShape([mouse.x, mouse.y] as Point, quads);
         if (target >= 0 && target === selected) {
             setDragging(true);
         } else {

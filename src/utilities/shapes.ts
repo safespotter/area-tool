@@ -1,13 +1,13 @@
 import { Point, Shape } from './types';
 
-export function findShapeIndex(target: Point, shapes: Shape[]) {
+export function findPointIndexInShape(target: Point, shapes: Shape[]) {
     for (let i = 0; i < shapes.length; i++) {
-        if (pointInShape(target, shapes[i])) return i;
+        if (isPointInShape(target, shapes[i])) return i;
     }
     return -1;
 }
 
-export function pointInShape(p: Point, s: Shape) {
+export function isPointInShape(p: Point, s: Shape) {
     let res = false;
     const X = 0;
     const Y = 1;
@@ -45,7 +45,7 @@ export function projectPointToSegment(p: Point, l: [Point, Point]) {
     const valDp = dotProduct(e1, e2);
     // get squared length of e1
     const len2 = e1[X] * e1[X] + e1[Y] * e1[Y];
-    const proj = [(l[0][X] + (valDp * e1[X]) / len2), (l[0][Y] + (valDp * e1[Y]) / len2)];
+    const proj: Point = [(l[0][X] + (valDp * e1[X]) / len2), (l[0][Y] + (valDp * e1[Y]) / len2)];
     if (
         proj[0] > l[0][0] && proj[0] > l[1][0] || // too far left
         proj[0] < l[0][0] && proj[0] < l[1][0] || // too far right
