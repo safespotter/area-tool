@@ -16,12 +16,12 @@ export function pointInShape(p: Point, s: Shape) {
         // https://www.eecs.umich.edu/courses/eecs380/HANDOUTS/PROJ2/InsidePoly.html
         const edge = [s[i], s[(i + 1) % s.length]];
         if (
-            ( // is the point in the Y range of the edge?
+            (   // is the point in the Y range of the edge?
                 edge[0][Y] <= p[Y] && edge[1][Y] >= p[Y] ||
                 edge[1][Y] <= p[Y] && edge[0][Y] >= p[Y]
             )
             &&
-            (
+            (   // is our point to the left the line that our edge sits on at Y = point[Y]?
                 p[X] < (edge[0][X] - edge[1][X]) * (p[Y] - edge[1][Y]) / (edge[0][Y] - edge[1][Y]) + edge[1][X]
             )
         ) {

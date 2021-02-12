@@ -1,4 +1,12 @@
 .Inspector {
     background: #eee;
-    padding: 12pt;
+    padding: 6pt;
+}
+
+.Inspector table {
+    width: 100%;
+}
+
+.Inspector td, .Inspector th {
+    border-left: 1px solid #888;
 }
