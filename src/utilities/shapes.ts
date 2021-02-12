@@ -35,8 +35,8 @@ export function distancePointToPoint(a: Point, b: Point) {
     return Math.hypot(a[0] - b[0], a[1] - b[1]);
 }
 
-export function projectPointToSegment(p: Point, l: [Point, Point]) {
-
+function badProjectPointToSegment(p: Point, l: [Point, Point]) {
+    // WHY DID I EVEN BOTHER WITH ALL OF THIS MATH
     const [x, y] = [p[0], p[1]];
     const [x1, y1] = [l[0][0], l[0][1]];
     const [x2, y2] = [l[1][0], l[1][1]];
@@ -64,4 +64,35 @@ export function projectPointToSegment(p: Point, l: [Point, Point]) {
         return null;
     }
     return proj;
+}
+
+export function projectPointToSegment(p: Point, l: [Point, Point]): Point | null {
+    // WHY DO I ONLY THINK OF VECTORS IN MY FREE TIME AND NOT WHEN I'M ON THE CLOCK??????
+    const lineVec = vecSub(l[1], l[0]);
+    const lineLen = distancePointToPoint(l[0], l[1]);
+    const lineVecNormalized = vecMul(lineVec, 1 / lineLen);
+    const pointProjLen = dot(vecSub(p, l[0]), lineVecNormalized);
+    if (pointProjLen < 0 || pointProjLen > lineLen) return null; // proj outside the segment
+    const pointProj = vecSum(l[0], vecMul(lineVecNormalized, pointProjLen));
+    return pointProj;
+}
+
+function dot(vec1: Point, vec2: Point) {
+    return vec1[0] * vec2[0] + vec1[1] * vec2[1];
+}
+
+function vecSum(v1: Point, v2: Point): Point {
+    return [v1[0] + v2[0], v1[1] + v2[1]];
+}
+
+function vecNegative(v: Point): Point {
+    return [-v[0], -v[1]];
+}
+
+function vecSub(v1: Point, v2: Point): Point {
+    return vecSum(v1, vecNegative(v2));
+}
+
+function vecMul(v: Point, n: number): Point {
+    return [v[0] * n, v[1] * n];
 }
