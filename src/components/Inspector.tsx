@@ -40,24 +40,28 @@ export default function Inspector({ target }: InspectorProps) {
     return (
         <div className="Inspector">
             <table>
-                <tr>
-                    <th>luX     </th>
-                    <th>luY     </th>
-                    <th>ruX     </th>
-                    <th>ruY     </th>
-                    <th>rbX     </th>
-                    <th>rbY     </th>
-                    <th>lbX     </th>
-                    <th>lbY     </th>
-                    <th>CarWalk </th>
-                    <th>Left    </th>
-                    <th>Up      </th>
-                    <th>Right   </th>
-                    <th>Down    </th>
-                    <th>Parking </th>
-                    <th>Stop    </th>
-                </tr>
-                {formatCSV(csvObj)}
+                <thead>
+                    <tr>
+                        <th>luX     </th>
+                        <th>luY     </th>
+                        <th>ruX     </th>
+                        <th>ruY     </th>
+                        <th>rbX     </th>
+                        <th>rbY     </th>
+                        <th>lbX     </th>
+                        <th>lbY     </th>
+                        <th>CarWalk </th>
+                        <th>Left    </th>
+                        <th>Up      </th>
+                        <th>Right   </th>
+                        <th>Down    </th>
+                        <th>Parking </th>
+                        <th>Stop    </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {formatCSV(csvObj)}
+                </tbody>
             </table>
         </div>
     );
