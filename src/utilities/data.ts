@@ -4,7 +4,8 @@ export function order(s: Shape) {
     const X = 0;
     const Y = 1;
 
-    let ol = s.sort((a, b) => a[Y] > b[Y] ? -1 : 1);
+    // sort up first
+    let ol = s.sort((a, b) => a[Y] < b[Y] ? -1 : 1);
 
     if (ol[0][X] > ol[1][X]) {
         const tmp = ol[0];
@@ -23,20 +24,20 @@ export function convertToCSV(s: Shape): CSVArea {
     const ol = order(s);
     return ({
         lu: {
-            x: ol[0][0],
-            y: ol[0][1],
+            x: Math.round(ol[0][0]),
+            y: Math.round(ol[0][1]),
         },
         ru: {
-            x: ol[1][0],
-            y: ol[1][1],
+            x: Math.round(ol[1][0]),
+            y: Math.round(ol[1][1]),
         },
         rb: {
-            x: ol[2][0],
-            y: ol[2][1],
+            x: Math.round(ol[2][0]),
+            y: Math.round(ol[2][1]),
         },
         lb: {
-            x: ol[3][0],
-            y: ol[3][1],
+            x: Math.round(ol[3][0]),
+            y: Math.round(ol[3][1]),
         },
         carWalk: true,
 
