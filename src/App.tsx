@@ -34,9 +34,9 @@ export default function App() {
     };
 
     const deleteSelected = () => {
-        quadList.splice(selected);
-        setSelected(-1);
+        quadList.splice(selected, 1);
         setQuadList(quadList);
+        setSelected(-1);
     };
 
     return (
@@ -56,6 +56,7 @@ export default function App() {
                 source={videoSrc}
                 setVideo={setVideo}
                 setSlider={setSlider}
+                value={slider ?? 0}
             />
             <FilePicker setFile={setFile} accept_types="video/*" />
             <ToolSelector

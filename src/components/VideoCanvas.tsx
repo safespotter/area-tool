@@ -8,16 +8,19 @@ type VideoCanvasProps = {
     source: string;
     setVideo: (video: HTMLVideoElement) => void;
     setSlider: (value: number | undefined) => void;
+    value: number;
 };
 
-export default function VideoCanvas({ source, setVideo, setSlider }: VideoCanvasProps) {
+export default function VideoCanvas({ source, setVideo, setSlider, value }: VideoCanvasProps) {
 
     const videoRef = useRef<HTMLVideoElement>(null);
+
 
     useEffect(() => {
         if (videoRef.current && source) {
             videoRef.current.src = source;
             setVideo(videoRef.current);
+            setSlider(0);
         }
     }, [source]);
 
@@ -37,6 +40,7 @@ export default function VideoCanvas({ source, setVideo, setSlider }: VideoCanvas
                 type="range"
                 min="0"
                 max="100"
+                value={value}
                 onChange={ev => { setVideoPos(+ev.target.value); }}
             />
             <video ref={videoRef} hidden />
