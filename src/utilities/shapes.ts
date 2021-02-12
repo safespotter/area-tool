@@ -36,16 +36,25 @@ export function distancePointToPoint(a: Point, b: Point) {
 }
 
 export function projectPointToSegment(p: Point, l: [Point, Point]) {
-    // http://www.sunshine2k.de/coding/java/PointOnLine/PointOnLine.html#step5
-    const X = 0;
-    const Y = 1;
-    // get dot product of e1, e2
-    const e1 = [l[1][X] - l[0][X], l[1][Y] - l[0][Y]] as Point;
-    const e2 = [p[X] - l[0][X], p[Y] - l[0][Y]] as Point;
-    const valDp = dotProduct(e1, e2);
-    // get squared length of e1
-    const len2 = e1[X] * e1[X] + e1[Y] * e1[Y];
-    const proj: Point = [(l[0][X] + (valDp * e1[X]) / len2), (l[0][Y] + (valDp * e1[Y]) / len2)];
+
+    const [x, y] = [p[0], p[1]];
+    const [x1, y1] = [l[0][0], l[0][1]];
+    const [x2, y2] = [l[1][0], l[1][1]];
+
+    // find m and q of the segment line
+    const m = (y1 - y2) / (x1 - x2);
+    const q = (x1 * y2 - x2 * y1) / (x1 - x2);
+
+    // find m and q of the projection line
+    const mproj = -1 / m;
+    const qproj = y - mproj * x;
+
+    // solve the system and find the point that sits on both lines
+    const xproj = (qproj - q) / (m - mproj);
+    const yproj = m * xproj + q;
+
+    const proj = [xproj, yproj] as Point;
+
     if (
         proj[0] > l[0][0] && proj[0] > l[1][0] || // too far left
         proj[0] < l[0][0] && proj[0] < l[1][0] || // too far right
@@ -53,12 +62,6 @@ export function projectPointToSegment(p: Point, l: [Point, Point]) {
         proj[1] < l[0][1] && proj[1] < l[1][1]    // too far down
     ) {
         return null;
-    } else {
-        return proj;
     }
-}
-
-function dotProduct(vec1: Point, vec2: Point) {
-    // http://www.sunshine2k.de/coding/java/PointOnLine/PointOnLine.html#step4
-    return vec1[0] * vec2[0] + vec1[1] * vec2[0];
+    return proj;
 }
