@@ -1,4 +1,3 @@
-import { SSL_OP_SSLEAY_080_CLIENT_DH_BUG } from 'constants';
 import { Point, Shape } from './types';
 
 export function findShapeIndex(target: Point, shapes: Shape[]) {
