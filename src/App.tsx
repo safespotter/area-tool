@@ -33,6 +33,12 @@ export default function App() {
         setQuadList(quadList);
     };
 
+    const deleteSelected = () => {
+        quadList.splice(selected);
+        setSelected(-1);
+        setQuadList(quadList);
+    };
+
     return (
         <div className="App">
             <Canvas
@@ -43,6 +49,7 @@ export default function App() {
                 selected={selected}
                 setSelected={setSelected}
                 moveSelected={moveSelected}
+                deleteSelected={deleteSelected}
                 slider={slider}
             />
             <VideoCanvas
