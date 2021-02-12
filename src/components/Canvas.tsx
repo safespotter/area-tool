@@ -150,7 +150,7 @@ export default function Canvas({
     };
     const onMouseLeave = () => {
         setPoints([]);
-        if (selected >= 0) {
+        if (dragging && selected >= 0) {
             deleteSelected();
         }
     };
