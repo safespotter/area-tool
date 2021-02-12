@@ -30,7 +30,6 @@ export default function App() {
             p[0] += vec[0];
             p[1] += vec[1];
         }
-        setQuadList(quadList);
     };
 
     const deleteSelected = () => {

@@ -109,7 +109,7 @@ export default function Canvas({
                 else {
                     const d1 = distancePointToPoint(pos, p1);
                     const d2 = distancePointToPoint(pos, p2);
-                    [d, p] = d1 < d2 ? [d1, p1] : [d2, p2];
+                    [d, p] = d1 < d2 ? [d1, [...p1] as Point] : [d2, [...p2] as Point]; // ... to force copy
                 }
 
                 // confront it with the previous results
