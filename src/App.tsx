@@ -6,6 +6,7 @@ import { Area, Point, Shape, Tool } from './utilities/types';
 import ToolSelector from './components/ToolSelector';
 import Canvas from './components/Canvas';
 import Inspector from './components/Inspector';
+import { IOManager } from './components/IOManager';
 
 
 export default function App() {
@@ -87,6 +88,10 @@ export default function App() {
             />
             <Inspector
                 target={quadList}
+            />
+            <IOManager
+                target={quadList}
+                source={file?.name}
             />
         </div>
     );

@@ -8,7 +8,7 @@ export class Area {
     public isCarWalkable = true;
     public direction: Point | null = null;
     public isParking = false;
-    public Stop = null;
+    public stop = null;
     public isSelected = false;
 
     constructor(quad: Shape, direction?: Point) {

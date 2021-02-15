@@ -11,6 +11,10 @@ type InspectorProps = {
 
 export default function Inspector({ target }: InspectorProps) {
 
+    let list: Area[] = target.filter(a => a.isSelected);
+    if (list.length === 0) list = target;
+
+
     function renderArea(area: Area) {
 
         const renderPoint = (p: Point) => {
@@ -42,7 +46,7 @@ export default function Inspector({ target }: InspectorProps) {
                 <td key="iscarwalkable">{area.isCarWalkable ? "true" : "false"}</td>
                 {renderDirection(area.direction)}
                 <td key="isparking">{area.isParking ? "true" : "false"}</td>
-                <td key="isstop">{area.Stop ?? "None"}</td>
+                <td key="isstop">{area.stop ?? "None"}</td>
             </tr>
         );
     }
@@ -71,7 +75,7 @@ export default function Inspector({ target }: InspectorProps) {
                 </thead>
                 <tbody>
                     {
-                        target.filter(a => a.isSelected).map((a) => renderArea(a))
+                        list.map((a) => renderArea(a))
                     }
                 </tbody>
             </table>
