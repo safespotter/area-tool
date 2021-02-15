@@ -203,6 +203,8 @@ export default function Canvas({
     const onMouseLeave = () => {
         setPoints([]);
         if (dragging) {
+            setDragging(false);
+            setOldMouse(null);
             deleteSelected();
         }
     };
