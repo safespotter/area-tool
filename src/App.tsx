@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import './App.css';
 import VideoCanvas from './components/VideoCanvas';
 import FilePicker from './components/FilePicker';
-import { Point, Shape, Tool } from './utilities/types';
+import { Area, Point, Shape, Tool } from './utilities/types';
 import ToolSelector from './components/ToolSelector';
 import Canvas from './components/Canvas';
 import Inspector from './components/Inspector';
@@ -14,8 +14,7 @@ export default function App() {
     const [videoSrc, setVideoSrc] = useState<string>("");
     const [video, setVideo] = useState<HTMLVideoElement | null>(null);
     const [slider, setSlider] = useState<number | undefined>();
-    const [quadList, setQuadList] = useState<Shape[]>([]);
-    const [selected, setSelected] = useState<number>(-1);
+    const [quadList, setQuadList] = useState<Area[]>([]);
     const [tool, setTool] = useState<Tool>(Tool.ADD);
 
     useEffect(() => {
@@ -26,16 +25,27 @@ export default function App() {
     }, [file]);
 
     const moveSelected = (vec: Point) => {
-        for (const p of quadList[selected]) {
-            p[0] += vec[0];
-            p[1] += vec[1];
-        }
+        // get the selected areas
+        const selected = quadList.filter(a => a.isSelected);
+        // add the vector to the points of the selected areas
+        selected.map(a => {
+            for (const p of a.shape) {
+                p[0] += vec[0];
+                p[1] += vec[1];
+            }
+        });
     };
 
     const deleteSelected = () => {
-        quadList.splice(selected, 1);
-        setQuadList(quadList);
-        setSelected(-1);
+        const filteredList = quadList.filter(a => !a.isSelected);
+        setQuadList(filteredList);
+    };
+
+    const setSelected = (index: number) => {
+        quadList.map(a => a.isSelected = false);
+        if (index >= 0 && index < quadList.length) {
+            quadList[index].isSelected = true;
+        }
     };
 
     return (
@@ -43,9 +53,8 @@ export default function App() {
             <Canvas
                 img={video}
                 quads={quadList}
-                newQuad={(quad: Shape) => { setQuadList([quad, ...quadList]); }}
+                newQuad={(quad: Area) => setQuadList([quad, ...quadList])}
                 tool={tool}
-                selected={selected}
                 setSelected={setSelected}
                 moveSelected={moveSelected}
                 deleteSelected={deleteSelected}
@@ -60,11 +69,11 @@ export default function App() {
             <FilePicker setFile={setFile} accept_types="video/*" />
             <ToolSelector
                 value={tool}
-                onAdd={() => setTool(Tool.ADD)}
-                onSelect={() => setTool(Tool.SELECT)}
+                onAdd={() => { setTool(Tool.ADD); setSelected(-1); }}
+                onSelect={() => { setTool(Tool.SELECT); setSelected(-1); }}
             />
             <Inspector
-                target={quadList[selected]}
+                target={quadList}
             />
         </div>
     );

@@ -1,41 +1,57 @@
-import { format } from 'path';
-import React, { useEffect } from 'react';
-import { convertToCSV } from '../utilities/data';
-import { CSVArea } from '../utilities/types';
+import React, { useEffect, useState } from 'react';
+import { order } from '../utilities/data';
+import { dot } from '../utilities/shapes';
+import { Area, Point } from '../utilities/types';
 
 import './Inspector.css';
 
 type InspectorProps = {
-    target: any;
+    target: Area[];
 };
 
 export default function Inspector({ target }: InspectorProps) {
 
-    let csvObj = null;
-    if (target) csvObj = convertToCSV(target);
+    const [inspected, setInspected] = useState<Area[]>([]);
 
-    const formatCSV = (csvObj: CSVArea | null) => {
-        if (!csvObj) return;
+    useEffect(() => {
+        setInspected(target.filter(a => a.isSelected));
+    });
+
+    function renderArea(area: Area) {
+
+        const renderPoint = (p: Point) => {
+            return [
+                <td key={"x" + p[0]}>{Math.round(p[0])}</td>,
+                <td key={"y" + p[1]}>{Math.round(p[1])}</td>,
+            ];
+        };
+
+        const renderedPoints = order(area.shape)
+            .map(p => renderPoint(p))
+            .reduce((acc, val) => acc.concat(val));
+        // .map((el, i) => el.key = i);
+
+        const renderDirection = (dir: Point | null) => {
+            if (!dir) dir = [0, 0];
+            // order is l-u-r-d
+            return [
+                <td key="left"> {dot(dir, [-1, 0]) > .25 ? 1 : 0}</td>,
+                <td key="up">   {dot(dir, [0, -1]) > .25 ? 1 : 0}</td>,
+                <td key="right">{dot(dir, [1, 0]) > .25 ? 1 : 0}</td>,
+                <td key="down"> {dot(dir, [0, 1]) > .25 ? 1 : 0}</td>,
+            ];
+        };
+
         return (
-            <tr>
-                <td>{csvObj.lu.x}        </td>
-                <td>{csvObj.lu.y}        </td>
-                <td>{csvObj.ru.x}        </td>
-                <td>{csvObj.ru.y}        </td>
-                <td>{csvObj.rb.x}        </td>
-                <td>{csvObj.rb.y}        </td>
-                <td>{csvObj.lb.x}        </td>
-                <td>{csvObj.lb.y}        </td>
-                <td>{csvObj.carWalk}        </td>
-                <td>{csvObj.direction.left} </td>
-                <td>{csvObj.direction.up}   </td>
-                <td>{csvObj.direction.right}</td>
-                <td>{csvObj.direction.down} </td>
-                <td>{csvObj.parking}        </td>
-                <td>{csvObj.stop}        </td>
+            <tr key={area.id}>
+                {renderedPoints}
+                <td key="iscarwalkable">{area.isCarWalkable ? "true" : "false"}</td>
+                {renderDirection(area.direction)}
+                <td key="isparking">{area.isParking ? "true" : "false"}</td>
+                <td key="isstop">{area.Stop ?? "None"}</td>
             </tr>
         );
-    };
+    }
 
     return (
         <div className="Inspector">
@@ -60,7 +76,9 @@ export default function Inspector({ target }: InspectorProps) {
                     </tr>
                 </thead>
                 <tbody>
-                    {formatCSV(csvObj)}
+                    {
+                        inspected.map((a) => renderArea(a))
+                    }
                 </tbody>
             </table>
         </div>

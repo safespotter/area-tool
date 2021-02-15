@@ -77,7 +77,7 @@ export function projectPointToSegment(p: Point, l: [Point, Point]): Point | null
     return pointProj;
 }
 
-function dot(vec1: Point, vec2: Point) {
+export function dot(vec1: Point, vec2: Point) {
     return vec1[0] * vec2[0] + vec1[1] * vec2[1];
 }
 

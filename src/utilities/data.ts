@@ -1,4 +1,4 @@
-import { Shape, CSVArea } from './types';
+import { Shape } from './types';
 
 export function order(s: Shape) {
     const X = 0;
@@ -18,38 +18,4 @@ export function order(s: Shape) {
         ol[3] = tmp;
     }
     return ol;
-}
-
-export function convertToCSV(s: Shape): CSVArea {
-    const ol = order(s);
-    return ({
-        lu: {
-            x: Math.round(ol[0][0]),
-            y: Math.round(ol[0][1]),
-        },
-        ru: {
-            x: Math.round(ol[1][0]),
-            y: Math.round(ol[1][1]),
-        },
-        rb: {
-            x: Math.round(ol[2][0]),
-            y: Math.round(ol[2][1]),
-        },
-        lb: {
-            x: Math.round(ol[3][0]),
-            y: Math.round(ol[3][1]),
-        },
-        carWalk: true,
-
-        direction: {
-            left: false,
-            up: false,
-            right: false,
-            down: false,
-        },
-
-        parking: false,
-
-        stop: null,
-    });
 }
