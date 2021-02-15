@@ -34,6 +34,7 @@ export default function App() {
                 p[1] += vec[1];
             }
         });
+        updateQuads(selected);
     };
 
     const deleteSelected = () => {
@@ -46,6 +47,18 @@ export default function App() {
         if (index >= 0 && index < quadList.length) {
             quadList[index].isSelected = true;
         }
+        setQuadList([...quadList]);
+    };
+
+    const updateQuads = (quads: Area[]) => {
+        const notUpdated = quadList.filter(a => {
+            for (const b of quads) {
+                if (a.id === b.id)
+                    return false;
+            }
+            return true;
+        });
+        setQuadList([...quads, ...notUpdated]);
     };
 
     return (

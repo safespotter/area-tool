@@ -81,18 +81,18 @@ export function dot(vec1: Point, vec2: Point) {
     return vec1[0] * vec2[0] + vec1[1] * vec2[1];
 }
 
-function vecSum(v1: Point, v2: Point): Point {
+export function vecSum(v1: Point, v2: Point): Point {
     return [v1[0] + v2[0], v1[1] + v2[1]];
 }
 
-function vecNegative(v: Point): Point {
+export function vecNegative(v: Point): Point {
     return [-v[0], -v[1]];
 }
 
-function vecSub(v1: Point, v2: Point): Point {
+export function vecSub(v1: Point, v2: Point): Point {
     return vecSum(v1, vecNegative(v2));
 }
 
-function vecMul(v: Point, n: number): Point {
+export function vecMul(v: Point, n: number): Point {
     return [v[0] * n, v[1] * n];
 }

@@ -19,7 +19,8 @@ export default function VideoCanvas({ source, setVideo, setSlider, value }: Vide
     useEffect(() => {
         if (videoRef.current && source) {
             videoRef.current.src = source;
-            setVideoPos(0);
+            videoRef.current.currentTime = 0;
+            setVideo(videoRef.current);
         }
     }, [source]);
 

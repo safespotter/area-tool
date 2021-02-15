@@ -2,7 +2,7 @@ import React, { useRef, useState, useEffect, ComponentProps } from 'react';
 import useMouse from '@react-hook/mouse-position';
 import './Canvas.css';
 import { Area, Point, Shape, Tool } from '../utilities/types';
-import { distancePointToPoint, projectPointToSegment, findPointIndexInShape } from '../utilities/shapes';
+import { distancePointToPoint, projectPointToSegment, findPointIndexInShape, vecSum } from '../utilities/shapes';
 
 const CANVAS_W = 1280;
 const CANVAS_H = 720;
@@ -48,16 +48,23 @@ export default function Canvas({
             context.fillRect(0, 0, canvas.width, canvas.height);
         }
 
+        let movement: Point = [0, 0];
+        // Drag
+        if (dragging && oldMouse) {
+            movement = [mouse.x! - oldMouse[0], mouse.y! - oldMouse[1]] as Point;
+        }
+
         // Finished Quads
         for (const quad of quads) {
             if (quad.isSelected) {
                 context.strokeStyle = '#ff0';
                 context.fillStyle = '#0ff';
+                drawPath(context, quad.shape.map(p => vecSum(p, movement)), true);
             } else {
                 context.strokeStyle = '#f00';
                 context.fillStyle = '#00f';
+                drawPath(context, quad.shape, true);
             }
-            drawPath(context, quad.shape, true);
         }
 
         if (mouse.x && mouse.y) {
@@ -75,13 +82,7 @@ export default function Canvas({
                 drawPath(context, path, true, close);
             }
 
-            // Drag
-            if (dragging && oldMouse) {
-                const movement = [mouse.x - oldMouse[0], mouse.y - oldMouse[1]] as Point;
-                moveSelected(movement);
-            }
 
-            setOldMouse([mouse.x, mouse.y]);
         }
     }, [img, quads, tool, mouse, points, slider]);
 
@@ -174,6 +175,7 @@ export default function Canvas({
         const target = findPointIndexInShape([mouse.x, mouse.y] as Point, quads.map(a => a.shape));
         if (target >= 0 && quads[target].isSelected) {
             setDragging(true);
+            setOldMouse([mouse.x!, mouse.y!]);
         } else {
             setSelected(target);
         }
@@ -192,7 +194,11 @@ export default function Canvas({
         }
     };
     const onMouseUp = () => {
-        setDragging(false);
+        if (dragging && oldMouse) {
+            moveSelected([mouse.x! - oldMouse[0], mouse.y! - oldMouse[1]]);
+            setDragging(false);
+            setOldMouse(null);
+        }
     };
     const onMouseLeave = () => {
         setPoints([]);

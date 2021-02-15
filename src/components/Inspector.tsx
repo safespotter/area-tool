@@ -11,12 +11,6 @@ type InspectorProps = {
 
 export default function Inspector({ target }: InspectorProps) {
 
-    const [inspected, setInspected] = useState<Area[]>([]);
-
-    useEffect(() => {
-        setInspected(target.filter(a => a.isSelected));
-    });
-
     function renderArea(area: Area) {
 
         const renderPoint = (p: Point) => {
@@ -77,7 +71,7 @@ export default function Inspector({ target }: InspectorProps) {
                 </thead>
                 <tbody>
                     {
-                        inspected.map((a) => renderArea(a))
+                        target.filter(a => a.isSelected).map((a) => renderArea(a))
                     }
                 </tbody>
             </table>
