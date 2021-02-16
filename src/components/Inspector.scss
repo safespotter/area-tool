@@ -1,0 +1,17 @@
+.Inspector {
+    background: #eee;
+    padding: 6pt;
+
+
+    table {
+        width: 100%;
+    }
+
+    .simple {
+        width: 100%;
+        margin: 0 6pt;
+        text-align: center;
+
+        -moz-appearance: textfield;
+    }
+}

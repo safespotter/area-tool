@@ -1,52 +1,140 @@
 import React, { useEffect, useState } from 'react';
 import { order } from '../utilities/data';
-import { dot } from '../utilities/shapes';
-import { Area, Point } from '../utilities/types';
+import { dot, vecSum } from '../utilities/shapes';
+import { Area, AreaDictionary, IIndexable, Point } from '../utilities/types';
 
-import './Inspector.css';
+import './Inspector.scss';
 
 type InspectorProps = {
     target: Area[];
+    update: (updated: Area[]) => void;
 };
 
-export default function Inspector({ target }: InspectorProps) {
+export default function Inspector({ target, update }: InspectorProps) {
 
-    let list: Area[] = target.filter(a => a.isSelected);
-    if (list.length === 0) list = target;
+    const [inspected, setInspected] = useState<AreaDictionary[]>();
+    const updateInspected = (updated: AreaDictionary, changed = true) => {
+        updated.changed = changed;
+        if (!inspected) return;
+        const unchanged = inspected?.filter(a => a.id !== updated.id);
+        setInspected([updated, ...unchanged].sort((a, b) => a.id < b.id ? -1 : 1));
+    };
+
+    useEffect(() => {
+        let selected: Area[] = target.filter(a => a.isSelected);
+        if (selected.length === 0)
+            selected = target;
+
+        let list = selected.map(a => a.toAreaDictionary());
+
+        const pending = inspected?.filter(t => t.changed);
+        list = list.map(a => {
+            const t = pending?.find(t => t.id === a.id);
+            return t ? t : a;
+        });
+
+        list = list.sort((a, b) => a.id < b.id ? -1 : 1);
+
+        setInspected(list);
+    }, [target]);
+
+    useEffect(() => { console.log(inspected); }, [inspected]);
 
 
-    function renderArea(area: Area) {
+    function renderAD(a: AreaDictionary) {
 
-        const renderPoint = (p: Point) => {
-            return [
-                <td key={"x" + p[0]}>{Math.round(p[0])}</td>,
-                <td key={"y" + p[1]}>{Math.round(p[1])}</td>,
-            ];
+        const renderPoint = (p: Point, key: string, ref: AreaDictionary) => {
+            return p.map((val, i) => {
+                return (
+                    <td key={`${key}${i}`}>
+                        <input className="simple"
+                            type="number"
+                            value={Math.round(val)}
+                            onChange={e => {
+                                (ref.points as IIndexable)[key][i] = +e.target.value;
+                                updateInspected(ref);
+                            }}
+                        />
+                    </td>
+                );
+            });
         };
 
-        const renderedPoints = order(area.shape)
-            .map(p => renderPoint(p))
-            .reduce((acc, val) => acc.concat(val));
-        // .map((el, i) => el.key = i);
+        const renderedPoints = Object.entries(a.points)
+            .flatMap(([k, v]) => renderPoint(v, k, a));
 
-        const renderDirection = (dir: Point | null) => {
-            if (!dir) dir = [0, 0];
-            // order is l-u-r-d
-            return [
-                <td key="left"> {dot(dir, [-1, 0]) > .25 ? 1 : 0}</td>,
-                <td key="up">   {dot(dir, [0, -1]) > .25 ? 1 : 0}</td>,
-                <td key="right">{dot(dir, [1, 0]) > .25 ? 1 : 0}</td>,
-                <td key="down"> {dot(dir, [0, 1]) > .25 ? 1 : 0}</td>,
-            ];
-        };
+        const renderedDirection = Object.entries(a.dir)
+            .map(([k, v]) => {
+                return (
+                    <td key={k}>
+                        <input className="simple"
+                            type="number"
+                            value={v ? 1 : 0}
+                            onChange={e => {
+                                (a.dir as IIndexable)[k] = +e.target.value > 0;
+                                updateInspected(a);
+                            }}
+                        />
+                    </td>
+                );
+            });
 
         return (
-            <tr key={area.id}>
+            <tr key={a.id}>
                 {renderedPoints}
-                <td key="iscarwalkable">{area.isCarWalkable ? "true" : "false"}</td>
-                {renderDirection(area.direction)}
-                <td key="isparking">{area.isParking ? "true" : "false"}</td>
-                <td key="isstop">{area.stop ?? "None"}</td>
+                <td key="iscarwalkable">
+                    <input type="checkbox"
+                        checked={a.carWalk}
+                        onChange={() => {
+                            a.carWalk = !a.carWalk;
+                            updateInspected(a);
+                        }}
+                    />
+                </td>
+                {renderedDirection}
+                <td key="isparking">
+                    <input type="checkbox"
+                        checked={a.parking}
+                        onChange={() => {
+                            a.parking = !a.parking;
+                            updateInspected(a);
+                        }}
+                    />
+                </td>
+                <td key="isstop">
+                    <input className="simple"
+                        type="text"
+                        value={a.stop ?? "None"}
+                        onChange={e => {
+                            a.stop = e.target.value;
+                            updateInspected(a);
+                        }}
+                    />
+                </td>
+                <td key="update">
+                    <button
+                        hidden={!a.changed}
+                        onClick={() => {
+                            updateInspected(a, false);
+                            update([
+                                target.find(t => t.id === a.id)!.fromAreaDictionary(a)
+                            ]);
+                        }}
+                    >
+                        update
+                    </button>
+                </td>
+                <td key="discard">
+                    <button
+                        hidden={!a.changed}
+                        onClick={() => {
+                            a = target.find(t => t.id === a.id)!.toAreaDictionary();
+                            updateInspected(a, false);
+                        }}
+                    >
+                        discard
+                    </button>
+                </td>
             </tr>
         );
     }
@@ -75,7 +163,7 @@ export default function Inspector({ target }: InspectorProps) {
                 </thead>
                 <tbody>
                     {
-                        list.map((a) => renderArea(a))
+                        inspected?.map((a) => renderAD(a))
                     }
                 </tbody>
             </table>

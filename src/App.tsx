@@ -88,6 +88,7 @@ export default function App() {
             />
             <Inspector
                 target={quadList}
+                update={updateQuads}
             />
             <IOManager
                 target={quadList}
