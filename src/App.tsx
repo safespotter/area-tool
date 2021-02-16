@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import './App.css';
+import './App.scss';
 import VideoCanvas from './components/VideoCanvas';
 import FilePicker from './components/FilePicker';
 import { Area, Point, Shape, Tool } from './utilities/types';
@@ -73,6 +73,8 @@ export default function App() {
                 moveSelected={moveSelected}
                 deleteSelected={deleteSelected}
                 slider={slider}
+                width={video?.videoWidth}
+                height={video?.videoHeight}
             />
             <VideoCanvas
                 source={videoSrc}

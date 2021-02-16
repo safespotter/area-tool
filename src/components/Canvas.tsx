@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect, ComponentProps } from 'react';
 import useMouse from '@react-hook/mouse-position';
-import './Canvas.css';
+import './Canvas.scss';
 import { Area, Point, Shape, Tool } from '../utilities/types';
 import { distancePointToPoint, projectPointToSegment, findPointIndexInShape, vecSum } from '../utilities/shapes';
 
@@ -18,12 +18,12 @@ export interface CanvasProps {
     moveSelected: (vector: Point) => void;
     deleteSelected: () => void;
     slider?: number;
+    width?: number;
+    height?: number;
 };
 
 export default function Canvas({
-    img, quads, newQuad,
-    tool, setSelected,
-    moveSelected, deleteSelected, slider,
+    img, quads, newQuad, tool, setSelected, moveSelected, deleteSelected, slider, width, height
 }: CanvasProps) {
 
     const [points, setPoints] = useState<Shape>([]);
@@ -31,7 +31,8 @@ export default function Canvas({
     const [oldMouse, setOldMouse] = useState<Point | null>(null);
 
     const ref = useRef<HTMLCanvasElement>(null);
-    const mouse = useMouse(ref);
+    const rawMouse = useMouse(ref);
+    const mouse: { x: number | null, y: number | null; } = { x: null, y: null };
 
     useEffect(() => {
         const canvas = ref.current;
@@ -40,9 +41,13 @@ export default function Canvas({
             return;
         }
 
+        const ratio = canvas.clientWidth / canvas.width;
+        mouse.x = rawMouse.x ? rawMouse.x / ratio : null;
+        mouse.y = rawMouse.y ? rawMouse.y / ratio : null;
+
         // Background
         if (img) {
-            context.drawImage(img, 0, 0, CANVAS_W, CANVAS_H);
+            context.drawImage(img, 0, 0, canvas.width, canvas.height);
         } else {
             context.fillStyle = '#fff';
             context.fillRect(0, 0, canvas.width, canvas.height);
@@ -84,7 +89,7 @@ export default function Canvas({
 
 
         }
-    }, [img, quads, tool, mouse, points, slider]);
+    }, [img, quads, tool, rawMouse, points, slider, width]);
 
     const snapToShapes = (pos: Point, shapes: Shape[]) => {
         let [minDist, newPoint] = shapes.reduce(([dist, point]: [number, Point | null], s) => {
@@ -216,8 +221,8 @@ export default function Canvas({
                 onMouseDown={onMouseDown}
                 onMouseUp={onMouseUp}
                 onMouseLeave={onMouseLeave}
-                width={CANVAS_W}
-                height={CANVAS_H}
+                width={width ?? CANVAS_W}
+                height={height ?? CANVAS_H}
             />
         </div>
     );

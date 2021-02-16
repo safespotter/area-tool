@@ -19,8 +19,17 @@ export default function VideoCanvas({ source, setVideo, setSlider, value }: Vide
     useEffect(() => {
         if (videoRef.current && source) {
             videoRef.current.src = source;
-            videoRef.current.currentTime = 0;
             setVideo(videoRef.current);
+
+            const loader = () => {
+                setTimeout(() => {
+                    if (videoRef.current?.duration) {
+                        setVideoPos(1);
+                    } else loader();
+                }, 10);
+            };
+
+            loader();
         }
     }, [source]);
 
@@ -29,7 +38,7 @@ export default function VideoCanvas({ source, setVideo, setSlider, value }: Vide
             return;
         }
         // force range 0 - 100
-        const value = percentage < 0 ? 0 : percentage > 100 ? 100 : percentage;
+        const value = percentage < 1 ? 1 : percentage > 100 ? 100 : percentage;
         videoRef.current.currentTime = value / 100 * videoRef.current.duration;
         setSlider(value);
     };
@@ -38,7 +47,7 @@ export default function VideoCanvas({ source, setVideo, setSlider, value }: Vide
         <div className="VideoCanvas">
             <input className="slider"
                 type="range"
-                min="0"
+                min="1"
                 max="100"
                 value={value}
                 onChange={ev => { setVideoPos(+ev.target.value); }}
