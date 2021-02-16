@@ -64,38 +64,46 @@ export default function App() {
 
     return (
         <div className="App">
-            <Canvas
-                img={video}
-                quads={quadList}
-                newQuad={(quad: Area) => setQuadList([quad, ...quadList])}
-                tool={tool}
-                setSelected={setSelected}
-                moveSelected={moveSelected}
-                deleteSelected={deleteSelected}
-                slider={slider}
-                width={video?.videoWidth}
-                height={video?.videoHeight}
-            />
-            <VideoCanvas
-                source={videoSrc}
-                setVideo={setVideo}
-                setSlider={setSlider}
-                value={slider ?? 0}
-            />
-            <FilePicker setFile={setFile} accept_types="video/*" />
-            <ToolSelector
-                value={tool}
-                onAdd={() => { setTool(Tool.ADD); setSelected(-1); }}
-                onSelect={() => { setTool(Tool.SELECT); setSelected(-1); }}
-            />
-            <Inspector
-                target={quadList}
-                update={updateQuads}
-            />
-            <IOManager
-                target={quadList}
-                source={file?.name}
-            />
+            <div>
+                <div className="BlockCanvas">
+                    <Canvas
+                        img={video}
+                        quads={quadList}
+                        newQuad={(quad: Area) => setQuadList([quad, ...quadList])}
+                        tool={tool}
+                        setSelected={setSelected}
+                        moveSelected={moveSelected}
+                        deleteSelected={deleteSelected}
+                        slider={slider}
+                        width={video?.videoWidth}
+                        height={video?.videoHeight}
+                    />
+                    <VideoCanvas
+                        source={videoSrc}
+                        setVideo={setVideo}
+                        setSlider={setSlider}
+                        value={slider ?? 0}
+                    />
+                </div>
+                <div className="BlockButtons">
+                    <ToolSelector
+                        value={tool}
+                        onAdd={() => { setTool(Tool.ADD); setSelected(-1); }}
+                        onSelect={() => { setTool(Tool.SELECT); setSelected(-1); }}
+                    />
+                    <FilePicker setFile={setFile} accept_types="video/*" />
+                    <IOManager
+                        target={quadList}
+                        source={file?.name}
+                    />
+                </div>
+            </div>
+            <div>
+                <Inspector
+                    target={quadList}
+                    update={updateQuads}
+                />
+            </div>
         </div>
     );
 }

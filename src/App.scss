@@ -2,10 +2,28 @@
   box-sizing: border-box;
   min-height: 100vh;
   text-align: center;
-  background-color: #282c34;
+  background-color: #334;
   padding: 12pt;
 
-  .Canvas {
+  .BlockCanvas {
     width: 66%;
   }
+
+  .BlockButtons {
+    box-shadow: 3pt 0pt 3pt -2pt;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    padding: 6pt;
+
+    button {
+      width: 100%;
+    }
+  }
+}
+
+.App > div {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
 }

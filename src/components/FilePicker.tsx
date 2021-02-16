@@ -13,7 +13,12 @@ function FilePicker({ setFile, accept_types = "" }: FilePickerProps) {
 
     return (
         <div className="FilePicker">
-            <input
+            <button
+                onClick={() => ref.current?.click()}
+            >
+                Select Video
+            </button>
+            <input hidden
                 ref={ref}
                 type="file"
                 accept={accept_types}

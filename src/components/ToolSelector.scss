@@ -1,0 +1,14 @@
+.ToolSelector {
+
+    display: flex;
+    flex-direction: column;
+    
+    > * {
+        margin: 6pt 0;
+    }
+
+    button.active {
+        color: red;
+        font-weight: bold;
+    }
+}
