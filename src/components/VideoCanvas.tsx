@@ -25,7 +25,7 @@ export default function VideoCanvas({ source, setVideo, setSlider, value }: Vide
     }, [source]);
 
     const setVideoPos = (percentage: number) => {
-        if (!videoRef.current) {
+        if (!videoRef.current || !source || !percentage) {
             return;
         }
         // force range 0 - 100
