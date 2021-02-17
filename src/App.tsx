@@ -95,6 +95,7 @@ export default function App() {
                     <IOManager
                         target={quadList}
                         source={file?.name}
+                        load={arr => setQuadList(arr)}
                     />
                 </div>
             </div>

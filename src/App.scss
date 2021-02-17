@@ -13,9 +13,11 @@
     flex-direction: column;
     justify-content: space-evenly;
     padding: 6pt;
+    max-width: 12rem;
 
     button {
       width: 100%;
+      margin: 2pt;
     }
   }
 }

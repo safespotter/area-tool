@@ -13,9 +13,9 @@ export class Area {
     public stop: string | null = null;
     public isSelected = false;
 
-    constructor(quad: Shape, direction?: Point) {
+    constructor(quad?: Shape, direction?: Point) {
         this.id = Area.newId();
-        this.shape = quad;
+        this.shape = quad ?? [[-1, -1], [-1, -1], [-1, -1], [-1, -1]];
         if (direction) this.direction = direction;
     }
 
@@ -29,10 +29,10 @@ export class Area {
         return {
             id: this.id,
             points: {
-                lu: [...points[0]],
-                ru: [...points[1]],
-                rb: [...points[2]],
-                lb: [...points[3]],
+                lu: points[0].map(x => Math.round(x)) as Point,
+                ru: points[1].map(x => Math.round(x)) as Point,
+                rb: points[2].map(x => Math.round(x)) as Point,
+                lb: points[3].map(x => Math.round(x)) as Point,
             },
             carWalk: this.isCarWalkable,
             dir: {

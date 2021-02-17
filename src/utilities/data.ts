@@ -4,18 +4,13 @@ export function order(s: Shape) {
     const X = 0;
     const Y = 1;
 
-    // sort up first
-    let ol = s.sort((a, b) => a[Y] < b[Y] ? -1 : 1);
+    let lu = [...s].sort((a, b) => a[Y] < b[Y] ? -1 : 1).slice(0, 2).sort((a, b) => a[X] < b[X] ? -1 : 1)[0];
+    let i_lu = s.findIndex(p => p === lu);
 
-    if (ol[0][X] > ol[1][X]) {
-        const tmp = ol[0];
-        ol[0] = ol[1];
-        ol[1] = tmp;
+    const ordered = [];
+    for (let i = 0; i < s.length; i++) {
+        ordered.push(s[(i_lu + i) % s.length]);
     }
-    if (ol[2][X] < ol[3][X]) {
-        const tmp = ol[2];
-        ol[2] = ol[3];
-        ol[3] = tmp;
-    }
-    return ol;
+
+    return ordered;
 }
