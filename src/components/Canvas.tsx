@@ -4,8 +4,8 @@ import './Canvas.scss';
 import { Area, Point, Shape, Tool } from '../utilities/types';
 import { distancePointToPoint, projectPointToSegment, findPointIndexInShape, vecSum } from '../utilities/shapes';
 
-const CANVAS_W = 1280;
-const CANVAS_H = 720;
+const CANVAS_W = 1920;
+const CANVAS_H = 1080;
 const POINT_RADIUS = 5;
 const SNAP_DISTANCE = 50;
 

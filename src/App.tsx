@@ -75,8 +75,8 @@ export default function App() {
                         moveSelected={moveSelected}
                         deleteSelected={deleteSelected}
                         slider={slider}
-                        width={video?.videoWidth}
-                        height={video?.videoHeight}
+                        width={video?.videoWidth || undefined}
+                        height={video?.videoHeight || undefined}
                     />
                     <VideoCanvas
                         source={videoSrc}
