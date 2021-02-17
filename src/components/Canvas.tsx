@@ -115,8 +115,9 @@ export default function Canvas({
                 if (points.length === 3) {
                     close = true;
                 }
-                context.strokeStyle = '#f00';
-                context.fillStyle = '#00f';
+                context.lineWidth = style1.width;
+                context.strokeStyle = style1.stroke;
+                context.fillStyle = style1.fill;
                 drawPath(context, path, true, close);
             }
 
