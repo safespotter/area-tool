@@ -43,6 +43,7 @@ export class Area {
             },
             parking: this.isParking,
             stop: `${this.stop ?? "None"}`,
+            ref: this,
         };
     }
 
@@ -61,6 +62,7 @@ export class Area {
 
         this.isParking = ad.parking;
         this.stop = ad.stop;
+        ad.ref = this;
         return this;
     }
 }

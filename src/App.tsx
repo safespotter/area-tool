@@ -51,6 +51,10 @@ export default function App() {
         setQuadList([...quadList]);
     };
 
+    const setSelectedById = (id: number) => {
+        setSelected(quadList.findIndex(a => a.id === id));
+    };
+
     const updateQuads = (quads: Area[]) => {
         const notUpdated = quadList.filter(a => {
             for (const b of quads) {
@@ -103,6 +107,7 @@ export default function App() {
                 <Inspector
                     target={quadList}
                     update={updateQuads}
+                    selectById={setSelectedById}
                 />
             </div>
         </div>

@@ -1,3 +1,5 @@
+import { Area } from "./area";
+
 export type Point = [number, number];
 export type Shape = Point[];
 export enum Tool { ADD, SELECT };
@@ -20,6 +22,7 @@ export type AreaDictionary = {
     parking: boolean;
     stop: string;
     changed?: boolean;
+    ref?: Area;
 };
 
 export interface IIndexable<T = any> { [key: string]: T; }

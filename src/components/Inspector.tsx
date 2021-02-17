@@ -10,9 +10,10 @@ import './Inspector.scss';
 type InspectorProps = {
     target: Area[];
     update: (updated: Area[]) => void;
+    selectById: (id: number) => void;
 };
 
-export default function Inspector({ target, update }: InspectorProps) {
+export default function Inspector({ target, update, selectById }: InspectorProps) {
 
     const [inspected, setInspected] = useState<AreaDictionary[]>();
     const updateInspected = (updated: AreaDictionary, changed = true) => {
@@ -23,9 +24,12 @@ export default function Inspector({ target, update }: InspectorProps) {
     };
 
     useEffect(() => {
-        let selected: Area[] = target.filter(a => a.isSelected);
-        if (selected.length === 0)
-            selected = target;
+
+        const selected = target;
+
+        // let selected: Area[] = target.filter(a => a.isSelected);
+        // if (selected.length === 0)
+        //     selected = target;
 
         let list = selected.map(a => a.toAreaDictionary());
 
@@ -80,7 +84,7 @@ export default function Inspector({ target, update }: InspectorProps) {
             });
 
         return (
-            <tr key={a.id}>
+            <tr key={a.id} onClick={() => selectById(a.id)} className={a.ref?.isSelected ? "selected" : ""}>
                 {renderedPoints}
                 <td key="iscarwalkable">
                     <input type="checkbox"
