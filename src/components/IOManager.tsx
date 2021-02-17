@@ -1,4 +1,5 @@
 import React, { useRef, useState } from 'react';
+import { Button } from '@material-ui/core';
 import { order } from '../utilities/data';
 import { dot } from '../utilities/shapes';
 import { Area, Point } from '../utilities/types';
@@ -73,11 +74,11 @@ export function IOManager({ target, source }: IOMangerProps) {
 
     return (
         <div className="IOManager">
-            <button
+            <Button variant="contained" color="primary"
                 onClick={download}
             >
                 Download
-            </button>
+            </Button>
             <a
                 ref={dlRef}
                 download={filename}

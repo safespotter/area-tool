@@ -2,7 +2,6 @@
   box-sizing: border-box;
   min-height: 100vh;
   text-align: center;
-  background-color: #334;
   padding: 12pt;
 
   .BlockCanvas {
@@ -10,7 +9,6 @@
   }
 
   .BlockButtons {
-    box-shadow: 3pt 0pt 3pt -2pt;
     display: flex;
     flex-direction: column;
     justify-content: space-evenly;

@@ -5,6 +5,7 @@
   "homepage": "http://NicolaSansoni.github.io/area_def_tool",
   "dependencies": {
     "@material-ui/core": "^4.11.3",
+    "@material-ui/icons": "^4.11.2",
     "@react-hook/mouse-position": "^4.1.0",
     "@testing-library/jest-dom": "^5.11.9",
     "@testing-library/react": "^11.2.5",

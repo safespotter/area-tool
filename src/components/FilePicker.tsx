@@ -1,4 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
+import { Button } from '@material-ui/core';
 
 import './FilePicker.css';
 
@@ -13,11 +14,11 @@ function FilePicker({ setFile, accept_types = "" }: FilePickerProps) {
 
     return (
         <div className="FilePicker">
-            <button
+            <Button variant="contained" color="primary"
                 onClick={() => ref.current?.click()}
             >
                 Select Video
-            </button>
+            </Button>
             <input hidden
                 ref={ref}
                 type="file"

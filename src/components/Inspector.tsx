@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from 'react';
+import { Button } from '@material-ui/core';
+import { Clear, Check, CheckBoxOutlined } from '@material-ui/icons';
 import { order } from '../utilities/data';
 import { dot, vecSum } from '../utilities/shapes';
 import { Area, AreaDictionary, IIndexable, Point } from '../utilities/types';
@@ -47,7 +49,7 @@ export default function Inspector({ target, update }: InspectorProps) {
             return p.map((val, i) => {
                 return (
                     <td key={`${key}${i}`}>
-                        <input className="simple"
+                        <input
                             type="number"
                             value={Math.round(val)}
                             onChange={e => {
@@ -67,7 +69,7 @@ export default function Inspector({ target, update }: InspectorProps) {
             .map(([k, v]) => {
                 return (
                     <td key={k}>
-                        <input className="simple"
+                        <input
                             type="number"
                             value={v ? 1 : 0}
                             onChange={e => {
@@ -102,7 +104,7 @@ export default function Inspector({ target, update }: InspectorProps) {
                     />
                 </td>
                 <td key="isstop">
-                    <input className="simple"
+                    <input
                         type="text"
                         value={a.stop ?? "None"}
                         onChange={e => {
@@ -111,9 +113,10 @@ export default function Inspector({ target, update }: InspectorProps) {
                         }}
                     />
                 </td>
+                <span />
                 <td key="update">
-                    <button
-                        hidden={!a.changed}
+                    <Button variant="contained" color="primary"
+                        className={!a.changed ? "hide" : ""}
                         onClick={() => {
                             updateInspected(a, false);
                             update([
@@ -121,19 +124,19 @@ export default function Inspector({ target, update }: InspectorProps) {
                             ]);
                         }}
                     >
-                        update
-                    </button>
+                        <Check />
+                    </Button>
                 </td>
                 <td key="discard">
-                    <button
-                        hidden={!a.changed}
+                    <Button variant="contained" color="secondary"
+                        className={!a.changed ? "hide" : ""}
                         onClick={() => {
                             a = target.find(t => t.id === a.id)!.toAreaDictionary();
                             updateInspected(a, false);
                         }}
                     >
-                        discard
-                    </button>
+                        <Clear />
+                    </Button>
                 </td>
             </tr>
         );

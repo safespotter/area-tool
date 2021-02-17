@@ -14,4 +14,9 @@ code {
 
 * {
   box-sizing: border-box;
+  flex-direction: inherit;
+}
+
+.hide {
+  display: none !important;
 }
