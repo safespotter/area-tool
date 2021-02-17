@@ -70,9 +70,10 @@ export default function Canvas({
         mouse.y = rawMouse.y ? rawMouse.y / ratio : null;
 
         // Background
-        if (img) {
+        try {
+            if (!img) throw Error;
             context.drawImage(img, 0, 0, canvas.width, canvas.height);
-        } else {
+        } catch (e) {
             context.fillStyle = '#fff';
             context.fillRect(0, 0, canvas.width, canvas.height);
         }
