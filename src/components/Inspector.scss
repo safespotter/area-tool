@@ -17,9 +17,8 @@
             -moz-appearance: textfield;
         }
 
-        span {
-            display: inline-block;
-            min-width: 1em;
+        .space {
+            width: 1em;
         }
 
         button {

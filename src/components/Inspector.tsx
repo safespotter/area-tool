@@ -40,8 +40,6 @@ export default function Inspector({ target, update }: InspectorProps) {
         setInspected(list);
     }, [target]);
 
-    useEffect(() => { console.log(inspected); }, [inspected]);
-
 
     function renderAD(a: AreaDictionary) {
 
@@ -113,7 +111,7 @@ export default function Inspector({ target, update }: InspectorProps) {
                         }}
                     />
                 </td>
-                <span />
+                <td className={!a.changed ? "hide" : "space"} />
                 <td key="update">
                     <Button variant="contained" color="primary"
                         className={!a.changed ? "hide" : ""}

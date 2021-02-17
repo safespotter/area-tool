@@ -66,7 +66,7 @@ export function IOManager({ target, source, load }: IOMangerProps) {
             return;
         }
         const csv = await f.text();
-        const rows = csv.split('\n');
+        const rows = csv.split('\n').filter(s => s !== "");
         const strings = rows.slice(1).map(r => r.split(','));
         const dictionaries = strings.map(r => {
             let ad: any = { points: {}, dir: {} };
