@@ -1,20 +1,17 @@
 import React, { useEffect, useRef } from 'react';
-import { Shape } from '../utilities/types';
-import Canvas, { CanvasProps } from './Canvas';
 
-import './VideoCanvas.css';
+import './Video.css';
 
-type VideoCanvasProps = {
+type VideoProps = {
     source: string;
     setVideo: (video: HTMLVideoElement) => void;
     setSlider: (value: number | undefined) => void;
     value: number;
 };
 
-export default function VideoCanvas({ source, setVideo, setSlider, value }: VideoCanvasProps) {
+export default function Video({ source, setVideo, setSlider, value }: VideoProps) {
 
     const videoRef = useRef<HTMLVideoElement>(null);
-
 
     useEffect(() => {
         if (videoRef.current && source) {
@@ -49,7 +46,6 @@ export default function VideoCanvas({ source, setVideo, setSlider, value }: Vide
                 type="range"
                 min="1"
                 max="100"
-                value={value}
                 onChange={ev => { setVideoPos(+ev.target.value); }}
             />
             <video ref={videoRef} hidden />
