@@ -71,11 +71,10 @@ export default function Inspector({ target, update, selectById }: InspectorProps
             .map(([k, v]) => {
                 return (
                     <td key={k}>
-                        <input
-                            type="number"
-                            value={v ? 1 : 0}
-                            onChange={e => {
-                                (a.dir as IIndexable)[k] = +e.target.value > 0;
+                        <input type="checkbox"
+                            checked={v}
+                            onChange={() => {
+                                (a.dir as IIndexable)[k] = !(a.dir as IIndexable)[k];
                                 updateInspected(a);
                             }}
                         />
@@ -116,9 +115,9 @@ export default function Inspector({ target, update, selectById }: InspectorProps
                     />
                 </td>
                 <td className={!a.changed ? "hide" : "space"} />
-                <td key="update">
+                <td key="update" className={!a.changed ? "hide" : ""}>
                     <Button variant="contained" color="primary"
-                        className={!a.changed ? "hide" : ""}
+
                         onClick={() => {
                             updateInspected(a, false);
                             update([
@@ -129,7 +128,7 @@ export default function Inspector({ target, update, selectById }: InspectorProps
                         <Check />
                     </Button>
                 </td>
-                <td key="discard">
+                <td key="discard" className={!a.changed ? "hide" : ""}>
                     <Button variant="contained" color="secondary"
                         className={!a.changed ? "hide" : ""}
                         onClick={() => {
