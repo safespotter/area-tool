@@ -25,21 +25,8 @@ export default function App() {
         }
     }, [file]);
 
-    const moveSelected = (vec: Point) => {
-        // get the selected areas
-        const selected = quadList.filter(a => a.isSelected);
-        // add the vector to the points of the selected areas
-        selected.map(a => {
-            for (const p of a.shape) {
-                p[0] += vec[0];
-                p[1] += vec[1];
-            }
-        });
-        updateQuads(selected);
-    };
-
-    const deleteSelected = () => {
-        const filteredList = quadList.filter(a => !a.isSelected);
+    const deleteQuads = (quads: Area[]) => {
+        const filteredList = quadList.filter(a => quads.every(b => b.id !== a.id));
         setQuadList(filteredList);
     };
 
@@ -56,13 +43,7 @@ export default function App() {
     };
 
     const updateQuads = (quads: Area[]) => {
-        const notUpdated = quadList.filter(a => {
-            for (const b of quads) {
-                if (a.id === b.id)
-                    return false;
-            }
-            return true;
-        });
+        const notUpdated = quadList.filter(a => quads.every(b => b.id !== a.id));
         setQuadList([...quads, ...notUpdated]);
     };
 
@@ -76,8 +57,8 @@ export default function App() {
                         newQuad={(quad: Area) => setQuadList([quad, ...quadList])}
                         tool={tool}
                         setSelected={setSelected}
-                        moveSelected={moveSelected}
-                        deleteSelected={deleteSelected}
+                        updateQuads={updateQuads}
+                        deleteQuads={deleteQuads}
                         slider={slider}
                         width={video?.videoWidth || undefined}
                         height={video?.videoHeight || undefined}

@@ -1,8 +1,7 @@
-import React, { useRef, useState, useEffect, ComponentProps } from 'react';
-import useMouse from '@react-hook/mouse-position';
+import React, { useRef, useState, useEffect, ComponentProps, MouseEvent } from 'react';
 import './Canvas.scss';
 import { Area, Point, Shape, Tool } from '../utilities/types';
-import { distancePointToPoint, projectPointToSegment, findPointIndexInShape, vecSum } from '../utilities/shapes';
+import { distancePointToPoint, projectPointToSegment, findPointInShapeIndex, vecSum, isPointInShape } from '../utilities/shapes';
 
 const CANVAS_W = 1920;
 const CANVAS_H = 1080;
@@ -39,24 +38,24 @@ export interface CanvasProps {
     newQuad: (quad: Area) => void;
     tool: Tool;
     setSelected: (index: number) => void;
-    moveSelected: (vector: Point) => void;
-    deleteSelected: () => void;
+    updateQuads: (arr: Area[]) => void;
+    deleteQuads: (arr: Area[]) => void;
     slider?: number;
     width?: number;
     height?: number;
 };
 
 export default function Canvas({
-    img, quads, newQuad, tool, setSelected, moveSelected, deleteSelected, slider, width, height
+    img, quads, newQuad, tool, setSelected, updateQuads, deleteQuads, slider, width, height
 }: CanvasProps) {
 
     const [points, setPoints] = useState<Shape>([]);
     const [dragging, setDragging] = useState<boolean>(false);
     const [oldMouse, setOldMouse] = useState<Point | null>(null);
+    const [dragIndexes, setDragIndexes] = useState<number[] | null>(null);
 
     const ref = useRef<HTMLCanvasElement>(null);
-    const rawMouse = useMouse(ref);
-    const mouse: { x: number | null, y: number | null; } = { x: null, y: null };
+    const [mouse, setMouse] = useState<{ x: number, y: number; }>({ x: 0, y: 0 });
 
     useEffect(() => {
         const canvas = ref.current;
@@ -64,10 +63,6 @@ export default function Canvas({
         if (!canvas || !context) {
             return;
         }
-
-        const ratio = canvas.clientWidth / canvas.width;
-        mouse.x = rawMouse.x ? rawMouse.x / ratio : null;
-        mouse.y = rawMouse.y ? rawMouse.y / ratio : null;
 
         // Background
         try {
@@ -100,7 +95,11 @@ export default function Canvas({
             context.fillStyle = style.fill;
 
             if (quad.isSelected) {
-                drawPath(context, quad.shape.map(p => vecSum(p, movement)), true);
+                drawPath(context, quad.shape.map((p, i) => {
+                    if (!dragIndexes || dragIndexes.some(n => n === i))
+                        return snapToShapes(vecSum(p, movement), quads.filter(a => a.id !== quad.id).map(a => a.shape));
+                    else return p;
+                }), true);
             } else {
                 drawPath(context, quad.shape);
             }
@@ -124,35 +123,13 @@ export default function Canvas({
 
 
         }
-    }, [img, quads, tool, rawMouse, points, slider, width]);
+    }, [img, quads, tool, mouse, points, slider, width]);
 
     const snapToShapes = (pos: Point, shapes: Shape[]) => {
-        let [minDist, newPoint] = shapes.reduce(([dist, point]: [number, Point | null], s) => {
-
-            // find the closest point in each shape with his distance
-            let [d, p] = s.reduce(([dist, point]: [number, Point | null], p1, i, s) => {
-
-                const p2 = s[(i + 1) % s.length];
-                let proj = projectPointToSegment(pos, [p1, p2]);
-                let d, p;
-                // if we found a projection it is the closest point
-                if (proj) {
-                    d = distancePointToPoint(pos, proj);
-                    p = proj;
-                }
-                // otherwise check wich end of the segment is the closest and pick that one
-                else {
-                    const d1 = distancePointToPoint(pos, p1);
-                    const d2 = distancePointToPoint(pos, p2);
-                    [d, p] = d1 < d2 ? [d1, [...p1] as Point] : [d2, [...p2] as Point]; // ... to force copy
-                }
-
-                // confront it with the previous results
-                if (d < dist || dist === -1) return [d, p];
-                else return [dist, point];
-            }, [-1, null]);
-
-            // confront it with the previous results
+        // give priority to points instead of edges
+        // find the closest point
+        let [minDist, newPoint] = shapes.flat().reduce(([dist, point]: [number, Point | null], p) => {
+            const d = distancePointToPoint(pos, p);
             if (d < dist || dist === -1) return [d, p];
             else return [dist, point];
         }, [-1, null]);
@@ -160,6 +137,34 @@ export default function Canvas({
         if (newPoint && minDist < SNAP_DISTANCE) {
             pos = newPoint;
         }
+        else {
+            [minDist, newPoint] = shapes.reduce(([dist, point]: [number, Point | null], s) => {
+                // find the closest point in the edges
+                let [d, p] = s.reduce(([dist, point]: [number, Point | null], p1, i, s) => {
+
+                    const p2 = s[(i + 1) % s.length];
+                    let proj = projectPointToSegment(pos, [p1, p2]);
+                    let d, p;
+                    // if we found a projection it is the closest point
+                    if (proj) {
+                        d = distancePointToPoint(pos, proj);
+                        p = proj;
+                        // confront it with the previous results
+                        if (d < dist || dist === -1) return [d, p];
+                    }
+                    return [dist, point];
+                }, [-1, null]);
+
+                // confront it with the previous results
+                if (d < dist || dist === -1) return [d, p];
+                else return [dist, point];
+            }, [-1, null]);
+
+            if (newPoint && minDist < SNAP_DISTANCE) {
+                pos = newPoint;
+            }
+        }
+
         return pos;
     };
 
@@ -220,11 +225,48 @@ export default function Canvas({
     };
 
     const handleSelect = () => {
-        const target = findPointIndexInShape([mouse.x, mouse.y] as Point, quads.map(a => a.shape));
-        if (target >= 0 && quads[target].isSelected) {
+        // check if we have a selected area
+        const selected = quads.find(a => a.isSelected);
+        let indexes: number[] | null = null;
+        if (selected) {
+            // check its closest points and edges to drag them
+            const points = selected.shape;
+            let distance: number;
+            indexes = [-1];
+            // find the closest point to the mouse pointer
+            [distance, indexes[0]] = points.reduce(([res_d, res_i], p, i) => {
+                const d = distancePointToPoint([mouse.x!, mouse.y!], p);
+                return d < res_d ? [d, i] : [res_d, res_i];
+            }, [999, -1]);
+            // if it's too far check if one of the edges is close enough
+            if (distance > SNAP_DISTANCE) {
+                [distance, indexes] = points.reduce(([res_d, res_is], p, i, points) => {
+                    const j = (i + 1) % points.length;
+                    const p1 = points[j];
+                    const proj = projectPointToSegment([mouse.x!, mouse.y!], [p, p1]);
+                    if (!proj) return [res_d, res_is];
+                    const dist = distancePointToPoint([mouse.x!, mouse.y!], proj);
+                    return dist < res_d ? [dist, [i, j]] : [res_d, res_is];
+                }, [999, [-1]]);
+            }
+            // if it's not check if we clicked it and drag the entire shape
+            if (distance > SNAP_DISTANCE) {
+                if (isPointInShape([mouse.x, mouse.y], selected.shape)) {
+                    indexes = [0, 1, 2, 3];
+                } else {
+                    indexes = null;
+                }
+            }
+        }
+
+        if (indexes) {
+            // update the state
+            setDragIndexes(indexes);
             setDragging(true);
             setOldMouse([mouse.x!, mouse.y!]);
         } else {
+            // check if we clicked an area and select it
+            const target = findPointInShapeIndex([mouse.x, mouse.y], quads.map(a => a.shape));
             setSelected(target);
         }
     };
@@ -243,17 +285,39 @@ export default function Canvas({
     };
     const onMouseUp = () => {
         if (dragging && oldMouse) {
-            moveSelected([mouse.x! - oldMouse[0], mouse.y! - oldMouse[1]]);
+            const selectedAreas = quads.filter(a => a.isSelected);
+            const movement: Point = [mouse.x! - oldMouse[0], mouse.y! - oldMouse[1]];
+            const updated = selectedAreas.map(a => {
+                a.shape = a.shape.map((p, i) => {
+                    if (!dragIndexes || dragIndexes.some(n => n === i))
+                        return snapToShapes(vecSum(p, movement), quads.filter(b => b.id !== a.id).map(b => b.shape));
+                    else return p;
+                });
+                return a;
+            });
+            updateQuads(updated);
             setDragging(false);
+            setDragIndexes(null);
             setOldMouse(null);
         }
     };
     const onMouseLeave = () => {
         setPoints([]);
-        if (dragging) {
+        if (dragging && !dragIndexes) {
             setDragging(false);
             setOldMouse(null);
-            deleteSelected();
+            deleteQuads(quads.filter(q => q.isSelected));
+        }
+    };
+    const onMouseMove = (e: React.MouseEvent) => {
+        const canvas = ref.current;
+        if (canvas) {
+            const ratio = canvas.clientWidth / canvas.width;
+            const topLeft = [canvas.offsetLeft, canvas.offsetTop];
+            setMouse({
+                x: (e.pageX - topLeft[0]) / ratio,
+                y: (e.pageY - topLeft[1]) / ratio,
+            });
         }
     };
 
@@ -264,6 +328,7 @@ export default function Canvas({
                 onMouseDown={onMouseDown}
                 onMouseUp={onMouseUp}
                 onMouseLeave={onMouseLeave}
+                onMouseMove={e => onMouseMove(e)}
                 width={width ?? CANVAS_W}
                 height={height ?? CANVAS_H}
             />

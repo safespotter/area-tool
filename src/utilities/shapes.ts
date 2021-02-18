@@ -1,6 +1,6 @@
 import { Point, Shape } from './types';
 
-export function findPointIndexInShape(target: Point, shapes: Shape[]) {
+export function findPointInShapeIndex(target: Point, shapes: Shape[]) {
     for (let i = 0; i < shapes.length; i++) {
         if (isPointInShape(target, shapes[i])) return i;
     }
