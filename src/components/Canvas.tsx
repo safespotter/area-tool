@@ -140,8 +140,7 @@ export default function Canvas({
 
         if (newPoint && minDist < SNAP_DISTANCE) {
             pos = newPoint;
-        }
-        else {
+        } else {
             [minDist, newPoint] = shapes.reduce(([dist, point]: [number, Vector | null], s) => {
                 // find the closest point in the edges
                 let [d, p] = s.reduce(([dist, point]: [number, Vector | null], p1, i, s) => {
@@ -160,8 +159,8 @@ export default function Canvas({
                 }, [-1, null]);
 
                 // confront it with the previous results
-                if (d < dist || dist === -1) return [d, p];
-                else return [dist, point];
+                if (p && d < dist || dist === -1) return [d, p];
+                return [dist, point];
             }, [-1, null]);
 
             if (newPoint && minDist < SNAP_DISTANCE) {
