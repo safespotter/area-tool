@@ -59,12 +59,18 @@ export default function Canvas({
     const ref = useRef<HTMLCanvasElement>(null);
     const [mouse, setMouse] = useState<{ x: number, y: number; }>({ x: 0, y: 0 });
 
+    let canvasH = CANVAS_H;
+    let canvasW = CANVAS_W;
+
     useEffect(() => {
         const canvas = ref.current;
         const context = canvas?.getContext('2d');
         if (!canvas || !context) {
             return;
         }
+
+        canvasH = canvas.height;
+        canvasW = canvas.width;
 
         // Background
         try {
@@ -98,7 +104,7 @@ export default function Canvas({
 
             const shape = quad.isSelected
                 ? quad.shape.map((p, i) => {
-                    if (!dragIndexes || dragIndexes.some(n => n === i))
+                    if (dragIndexes && dragIndexes.some(n => n === i))
                         return snapToShapes(vecSum(p, movement), quads.filter(a => a.id !== quad.id).map(a => a.shape));
                     else return p;
                 })
@@ -132,6 +138,8 @@ export default function Canvas({
     const snapToShapes = (pos: Vector, shapes: Shape[]) => {
         // give priority to points instead of edges
         // find the closest point
+        console.log(canvasW, canvasH);
+        shapes.push([[0, 0], [canvasW, 0], [canvasW, canvasH], [0, canvasH]]); // add boundaries
         let [minDist, newPoint] = shapes.flat().reduce(([dist, point]: [number, Vector | null], p) => {
             const d = distancePointToPoint(pos, p);
             if (d < dist || dist === -1) return [d, p];
@@ -315,7 +323,8 @@ export default function Canvas({
                 throw Error("No tool selected???");
         }
     };
-    const onMouseUp = () => {
+
+    const stopDragging = () => {
         if (dragging && oldMouse) {
             const selectedAreas = quads.filter(a => a.isSelected);
             const movement: Vector = [mouse.x! - oldMouse[0], mouse.y! - oldMouse[1]];
@@ -333,12 +342,21 @@ export default function Canvas({
             setOldMouse(null);
         }
     };
+
+    const onMouseUp = () => {
+        stopDragging();
+    };
+
     const onMouseLeave = () => {
         setPoints([]);
         if (dragging && dragIndexes?.length === 4) {
             setDragging(false);
+            setDragIndexes(null);
             setOldMouse(null);
             deleteQuads(quads.filter(q => q.isSelected));
+        }
+        else {
+            stopDragging();
         }
     };
     const onMouseMove = (e: React.MouseEvent) => {
