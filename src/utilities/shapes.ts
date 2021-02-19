@@ -97,18 +97,18 @@ export function vecScale(v: Vector, n: number): Vector {
     return [v[0] * n, v[1] * n];
 }
 
-export function vecMul(v1: Vector, v2: Vector): Vector {
-    return [v1[0] * v2[0], v1[1] * v2[1]];
-}
-
-export function vecToCoordinateSystem(v: Vector, up: Vector, right: Vector): Vector {
-    const x = dot(v, right);
-    const y = dot(v, up);
-    return [x, y] as Vector;
+export function vecLen(v: Vector): number {
+    return distancePointToPoint([0, 0], v);
 }
 
 export function vecFromCoordinateSystem(v: Vector, up: Vector, right: Vector): Vector {
-    return vecToCoordinateSystem(v, vecNegative(right), vecNegative(up));
+    return vecSum(vecScale(right, v[0]), vecScale(up, v[1]));
+}
+
+export function vecRotate(v: Vector, upRotated: Vector): Vector {
+    const up = vecScale(upRotated, 1 / vecLen(upRotated));
+    const right = [up[1], -up[0]] as Vector;
+    return vecFromCoordinateSystem(v, up, right);
 }
 
 export function centroidOfShape(shape: Shape) {

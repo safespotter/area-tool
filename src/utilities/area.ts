@@ -37,9 +37,9 @@ export class Area {
             carWalk: this.isCarWalkable,
             dir: {
                 left: dot(dir, [-1, 0]) > .25 ? true : false,
-                up: dot(dir, [0, -1]) > .25 ? true : false,
+                up: dot(dir, [0, 1]) > .25 ? true : false,
                 right: dot(dir, [1, 0]) > .25 ? true : false,
-                down: dot(dir, [0, 1]) > .25 ? true : false,
+                down: dot(dir, [0, -1]) > .25 ? true : false,
             },
             parking: this.isParking,
             stop: `${this.stop ?? "None"}`,
@@ -53,8 +53,8 @@ export class Area {
         const dirs = {
             left: [-1, 0],
             right: [1, 0],
-            up: [0, -1],
-            down: [0, 1],
+            up: [0, 1],
+            down: [0, -1],
         };
         this.direction = Object.entries(ad.dir)
             .map(([k, v]) => v ? (dirs as IIndexable)[k] : [0, 0])

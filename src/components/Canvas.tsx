@@ -1,7 +1,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 import './Canvas.scss';
 import { Area, Vector, Shape, Tool } from '../utilities/types';
-import { distancePointToPoint, projectPointToSegment, findPointInShapeIndex, vecSum, vecScale, vecFromCoordinateSystem, centroidOfShape, dirShapeToShape, isPointInShape } from '../utilities/shapes';
+import { distancePointToPoint, projectPointToSegment, findPointInShapeIndex, vecSum, vecScale, vecFromCoordinateSystem, centroidOfShape, dirShapeToShape, isPointInShape, vecRotate } from '../utilities/shapes';
 import { order } from '../utilities/data';
 
 const CANVAS_W = 1920;
@@ -184,7 +184,7 @@ export default function Canvas({
         const updatedShape = [pos, ...points];
 
         if (updatedShape.length === 4) {
-            const newArea = new Area(order(updatedShape), [0, -1]);
+            const newArea = new Area(order(updatedShape), [0, 1]);
             newArea.isSelected = true;
             setSelected(-1);
             newQuad(newArea);
@@ -234,28 +234,24 @@ export default function Canvas({
         const shapeUp = dirShapeToShape([quad[2], quad[3]], [quad[0], quad[1]]);
         const shapeRight = dirShapeToShape([quad[3], quad[0]], [quad[1], quad[2]]);
 
-        const dirVecInContext = vecFromCoordinateSystem(dirVec, shapeUp, shapeRight);
 
-        const arrow: Shape = [[-1, 0], [0, 2], [1, 0]];
+        let arrow: Shape = [[-1, 0], [0, 2], [1, 0]];
+        arrow = arrow.map(v => vecScale(v, ARROW_SIZE));
 
-        // 2d rotation
-        const arrowOriented = arrow.map(v => {
-            const x = v[0];
-            const y = v[1];
-            const cos = dirVecInContext[0];
-            const sin = dirVecInContext[1];
-            return [x * cos - y * sin, x * sin + y * cos] as Vector;
-        });
+        const dirVecOriented = vecFromCoordinateSystem(dirVec, shapeUp, shapeRight);
+        arrow = arrow.map(v => vecRotate(v, dirVecOriented));
 
-        const scaledArrowOriented = arrowOriented.map(v => vecScale(v, ARROW_SIZE));
-        const arrowTranslated = scaledArrowOriented.map(v => vecSum(v, center));
+        // arrow = arrow.map(v => vecRotate(v, dirVec));
+        // arrow = arrow.map(v => vecFromCoordinateSystem(v, shapeUp, shapeRight));
+
+        arrow = arrow.map(v => vecSum(v, center));
 
         const tmpFill = canvasCtx.fillStyle;
         canvasCtx.fillStyle = "rgba(0,0,0,0)";
         const tmpStroke = canvasCtx.strokeStyle;
         canvasCtx.strokeStyle = color;
 
-        drawPath(canvasCtx, arrowTranslated, false, false);
+        drawPath(canvasCtx, arrow, false, false);
 
         canvasCtx.fillStyle = tmpFill;
         canvasCtx.strokeStyle = tmpStroke;
