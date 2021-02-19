@@ -1,6 +1,6 @@
 import { order } from './data';
 import { dot, vecSum } from './shapes';
-import { AreaDictionary, IIndexable, Point, Shape } from './types';
+import { AreaDictionary, IIndexable, Vector, Shape } from './types';
 
 export class Area {
     private static counter = 0;
@@ -8,12 +8,12 @@ export class Area {
     readonly id: number;
     public shape: Shape;
     public isCarWalkable = true;
-    public direction: Point | null = null;
+    public direction: Vector | null = null;
     public isParking = false;
     public stop: string | null = null;
     public isSelected = false;
 
-    constructor(quad?: Shape, direction?: Point) {
+    constructor(quad?: Shape, direction?: Vector) {
         this.id = Area.newId();
         this.shape = quad ?? [[-1, -1], [-1, -1], [-1, -1], [-1, -1]];
         if (direction) this.direction = direction;
@@ -29,10 +29,10 @@ export class Area {
         return {
             id: this.id,
             points: {
-                lu: points[0].map(x => Math.round(x)) as Point,
-                ru: points[1].map(x => Math.round(x)) as Point,
-                rb: points[2].map(x => Math.round(x)) as Point,
-                lb: points[3].map(x => Math.round(x)) as Point,
+                lu: points[0].map(x => Math.round(x)) as Vector,
+                ru: points[1].map(x => Math.round(x)) as Vector,
+                rb: points[2].map(x => Math.round(x)) as Vector,
+                lb: points[3].map(x => Math.round(x)) as Vector,
             },
             carWalk: this.isCarWalkable,
             dir: {

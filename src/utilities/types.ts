@@ -1,16 +1,16 @@
 import { Area } from "./area";
 
-export type Point = [number, number];
-export type Shape = Point[];
+export type Vector = [number, number];
+export type Shape = Vector[];
 export enum Tool { ADD, SELECT };
 
 export type AreaDictionary = {
     id: number;
     points: {
-        lu: Point;
-        ru: Point;
-        rb: Point;
-        lb: Point;
+        lu: Vector;
+        ru: Vector;
+        rb: Vector;
+        lb: Vector;
     };
     carWalk: boolean;
     dir: {

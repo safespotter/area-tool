@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import './App.scss';
 import Video from './components/Video';
 import FilePicker from './components/FilePicker';
-import { Area, Point, Shape, Tool } from './utilities/types';
+import { Area, Vector, Shape, Tool } from './utilities/types';
 import ToolSelector from './components/ToolSelector';
 import Canvas from './components/Canvas';
 import Inspector from './components/Inspector';

@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import { Button } from '@material-ui/core';
-import { Area, AreaDictionary, Point } from '../utilities/types';
+import { Area, AreaDictionary, Vector } from '../utilities/types';
 
 import './IOManager.css';
 
@@ -71,10 +71,10 @@ export function IOManager({ target, source, load }: IOMangerProps) {
         const dictionaries = strings.map(r => {
             let ad: any = { points: {}, dir: {} };
             const vals: number[] = r.map(v => +v);
-            ad.points.lu = vals.slice(0, 2) as Point;
-            ad.points.ru = vals.slice(2, 4) as Point;
-            ad.points.rb = vals.slice(4, 6) as Point;
-            ad.points.lb = vals.slice(6, 8) as Point;
+            ad.points.lu = vals.slice(0, 2) as Vector;
+            ad.points.ru = vals.slice(2, 4) as Vector;
+            ad.points.rb = vals.slice(4, 6) as Vector;
+            ad.points.lb = vals.slice(6, 8) as Vector;
             ad.carWalk = vals[8] > 0;
             ad.dir.left = vals[9] > 0;
             ad.dir.up = vals[10] > 0;

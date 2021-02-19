@@ -1,13 +1,13 @@
-import { Point, Shape } from './types';
+import { Vector, Shape } from './types';
 
-export function findPointInShapeIndex(target: Point, shapes: Shape[]) {
+export function findPointInShapeIndex(target: Vector, shapes: Shape[]) {
     for (let i = 0; i < shapes.length; i++) {
         if (isPointInShape(target, shapes[i])) return i;
     }
     return -1;
 }
 
-export function isPointInShape(p: Point, s: Shape) {
+export function isPointInShape(p: Vector, s: Shape) {
     let res = false;
     const X = 0;
     const Y = 1;
@@ -30,12 +30,12 @@ export function isPointInShape(p: Point, s: Shape) {
     return res;
 }
 
-export function distancePointToPoint(a: Point, b: Point) {
+export function distancePointToPoint(a: Vector, b: Vector) {
     // Pitagora
     return Math.hypot(a[0] - b[0], a[1] - b[1]);
 }
 
-function badProjectPointToSegment(p: Point, l: [Point, Point]) {
+function badProjectPointToSegment(p: Vector, l: [Vector, Vector]) {
     // WHY DID I EVEN BOTHER WITH ALL OF THIS MATH
     const [x, y] = [p[0], p[1]];
     const [x1, y1] = [l[0][0], l[0][1]];
@@ -53,7 +53,7 @@ function badProjectPointToSegment(p: Point, l: [Point, Point]) {
     const xproj = (qproj - q) / (m - mproj);
     const yproj = m * xproj + q;
 
-    const proj = [xproj, yproj] as Point;
+    const proj = [xproj, yproj] as Vector;
 
     if (
         proj[0] > l[0][0] && proj[0] > l[1][0] || // too far left
@@ -66,33 +66,60 @@ function badProjectPointToSegment(p: Point, l: [Point, Point]) {
     return proj;
 }
 
-export function projectPointToSegment(p: Point, l: [Point, Point]): Point | null {
+export function projectPointToSegment(p: Vector, l: [Vector, Vector]): Vector | null {
     // WHY DO I ONLY THINK OF VECTORS IN MY FREE TIME AND NOT WHEN I'M ON THE CLOCK??????
     const lineVec = vecSub(l[1], l[0]);
     const lineLen = distancePointToPoint(l[0], l[1]);
-    const lineVecNormalized = vecMul(lineVec, 1 / lineLen);
+    const lineVecNormalized = vecScale(lineVec, 1 / lineLen);
     const pointProjLen = dot(vecSub(p, l[0]), lineVecNormalized);
     if (pointProjLen < 0 || pointProjLen > lineLen) return null; // proj outside the segment
-    const pointProj = vecSum(l[0], vecMul(lineVecNormalized, pointProjLen));
+    const pointProj = vecSum(l[0], vecScale(lineVecNormalized, pointProjLen));
     return pointProj;
 }
 
-export function dot(vec1: Point, vec2: Point) {
+export function dot(vec1: Vector, vec2: Vector) {
     return vec1[0] * vec2[0] + vec1[1] * vec2[1];
 }
 
-export function vecSum(v1: Point, v2: Point): Point {
+export function vecSum(v1: Vector, v2: Vector): Vector {
     return [v1[0] + v2[0], v1[1] + v2[1]];
 }
 
-export function vecNegative(v: Point): Point {
+export function vecNegative(v: Vector): Vector {
     return [-v[0], -v[1]];
 }
 
-export function vecSub(v1: Point, v2: Point): Point {
+export function vecSub(v1: Vector, v2: Vector): Vector {
     return vecSum(v1, vecNegative(v2));
 }
 
-export function vecMul(v: Point, n: number): Point {
+export function vecScale(v: Vector, n: number): Vector {
     return [v[0] * n, v[1] * n];
+}
+
+export function vecMul(v1: Vector, v2: Vector): Vector {
+    return [v1[0] * v2[0], v1[1] * v2[1]];
+}
+
+export function vecToCoordinateSystem(v: Vector, up: Vector, right: Vector): Vector {
+    const x = dot(v, right);
+    const y = dot(v, up);
+    return [x, y] as Vector;
+}
+
+export function vecFromCoordinateSystem(v: Vector, up: Vector, right: Vector): Vector {
+    return vecToCoordinateSystem(v, vecNegative(right), vecNegative(up));
+}
+
+export function centroidOfShape(shape: Shape) {
+    const sum = shape.reduce((res, v) => vecSum(v, res));
+    return vecScale(sum, 1 / shape.length);
+}
+
+export function dirShapeToShape(s1: Shape, s2: Shape) {
+    const center1 = centroidOfShape(s1);
+    const center2 = centroidOfShape(s2);
+    const lineC1toC2 = vecSub(center2, center1);
+    const distance = distancePointToPoint([0, 0], lineC1toC2);
+    return vecScale(lineC1toC2, 1 / distance);
 }

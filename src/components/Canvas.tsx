@@ -1,12 +1,14 @@
-import React, { useRef, useState, useEffect, ComponentProps, MouseEvent } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import './Canvas.scss';
-import { Area, Point, Shape, Tool } from '../utilities/types';
-import { distancePointToPoint, projectPointToSegment, findPointInShapeIndex, vecSum, isPointInShape } from '../utilities/shapes';
+import { Area, Vector, Shape, Tool } from '../utilities/types';
+import { distancePointToPoint, projectPointToSegment, findPointInShapeIndex, vecSum, vecScale, vecFromCoordinateSystem, centroidOfShape, dirShapeToShape, isPointInShape } from '../utilities/shapes';
+import { order } from '../utilities/data';
 
 const CANVAS_W = 1920;
 const CANVAS_H = 1080;
 const POINT_RADIUS = 5;
 const SNAP_DISTANCE = 25;
+const ARROW_SIZE = 12;
 
 const alpha = .25;
 
@@ -51,7 +53,7 @@ export default function Canvas({
 
     const [points, setPoints] = useState<Shape>([]);
     const [dragging, setDragging] = useState<boolean>(false);
-    const [oldMouse, setOldMouse] = useState<Point | null>(null);
+    const [oldMouse, setOldMouse] = useState<Vector | null>(null);
     const [dragIndexes, setDragIndexes] = useState<number[] | null>(null);
 
     const ref = useRef<HTMLCanvasElement>(null);
@@ -73,10 +75,10 @@ export default function Canvas({
             context.fillRect(0, 0, canvas.width, canvas.height);
         }
 
-        let movement: Point = [0, 0];
+        let movement: Vector = [0, 0];
         // Drag
         if (dragging && oldMouse) {
-            movement = [mouse.x! - oldMouse[0], mouse.y! - oldMouse[1]] as Point;
+            movement = [mouse.x! - oldMouse[0], mouse.y! - oldMouse[1]] as Vector;
         }
 
         // Finished Quads
@@ -94,15 +96,17 @@ export default function Canvas({
             context.strokeStyle = style.stroke;
             context.fillStyle = style.fill;
 
-            if (quad.isSelected) {
-                drawPath(context, quad.shape.map((p, i) => {
+            const shape = quad.isSelected
+                ? quad.shape.map((p, i) => {
                     if (!dragIndexes || dragIndexes.some(n => n === i))
                         return snapToShapes(vecSum(p, movement), quads.filter(a => a.id !== quad.id).map(a => a.shape));
                     else return p;
-                }), true);
-            } else {
-                drawPath(context, quad.shape);
-            }
+                })
+                : quad.shape;
+
+
+            drawPath(context, shape, quad.isSelected);
+            drawArrow(context, shape, quad.direction ?? [0, 0], style.stroke);
         }
 
         if (mouse.x && mouse.y) {
@@ -125,10 +129,10 @@ export default function Canvas({
         }
     }, [img, quads, tool, mouse, points, slider, width]);
 
-    const snapToShapes = (pos: Point, shapes: Shape[]) => {
+    const snapToShapes = (pos: Vector, shapes: Shape[]) => {
         // give priority to points instead of edges
         // find the closest point
-        let [minDist, newPoint] = shapes.flat().reduce(([dist, point]: [number, Point | null], p) => {
+        let [minDist, newPoint] = shapes.flat().reduce(([dist, point]: [number, Vector | null], p) => {
             const d = distancePointToPoint(pos, p);
             if (d < dist || dist === -1) return [d, p];
             else return [dist, point];
@@ -138,9 +142,9 @@ export default function Canvas({
             pos = newPoint;
         }
         else {
-            [minDist, newPoint] = shapes.reduce(([dist, point]: [number, Point | null], s) => {
+            [minDist, newPoint] = shapes.reduce(([dist, point]: [number, Vector | null], s) => {
                 // find the closest point in the edges
-                let [d, p] = s.reduce(([dist, point]: [number, Point | null], p1, i, s) => {
+                let [d, p] = s.reduce(([dist, point]: [number, Vector | null], p1, i, s) => {
 
                     const p2 = s[(i + 1) % s.length];
                     let proj = projectPointToSegment(pos, [p1, p2]);
@@ -173,14 +177,14 @@ export default function Canvas({
             return;
         }
 
-        let pos: Point = [mouse.x, mouse.y];
+        let pos: Vector = [mouse.x, mouse.y];
 
         pos = snapToShapes(pos, quads.map(a => a.shape));
 
         const updatedShape = [pos, ...points];
 
         if (updatedShape.length === 4) {
-            const newArea = new Area(updatedShape);
+            const newArea = new Area(order(updatedShape), [0, -1]);
             newArea.isSelected = true;
             setSelected(-1);
             newQuad(newArea);
@@ -210,7 +214,7 @@ export default function Canvas({
         }
     };
 
-    const drawPoint = (canvasCtx: CanvasRenderingContext2D, point: Point) => {
+    const drawPoint = (canvasCtx: CanvasRenderingContext2D, point: Vector) => {
         const tmpFill = canvasCtx.fillStyle;
         const tmpStroke = canvasCtx.strokeStyle;
         canvasCtx.fillStyle = "#5f5";
@@ -220,6 +224,39 @@ export default function Canvas({
         canvasCtx.closePath();
         canvasCtx.fill();
         canvasCtx.stroke();
+        canvasCtx.fillStyle = tmpFill;
+        canvasCtx.strokeStyle = tmpStroke;
+    };
+
+    const drawArrow = (canvasCtx: CanvasRenderingContext2D, quad: Vector[], dirVec: Vector, color = "#000") => {
+        const center = centroidOfShape(quad);
+
+        const shapeUp = dirShapeToShape([quad[2], quad[3]], [quad[0], quad[1]]);
+        const shapeRight = dirShapeToShape([quad[3], quad[0]], [quad[1], quad[2]]);
+
+        const dirVecInContext = vecFromCoordinateSystem(dirVec, shapeUp, shapeRight);
+
+        const arrow: Shape = [[-1, 0], [0, 2], [1, 0]];
+
+        // 2d rotation
+        const arrowOriented = arrow.map(v => {
+            const x = v[0];
+            const y = v[1];
+            const cos = dirVecInContext[0];
+            const sin = dirVecInContext[1];
+            return [x * cos - y * sin, x * sin + y * cos] as Vector;
+        });
+
+        const scaledArrowOriented = arrowOriented.map(v => vecScale(v, ARROW_SIZE));
+        const arrowTranslated = scaledArrowOriented.map(v => vecSum(v, center));
+
+        const tmpFill = canvasCtx.fillStyle;
+        canvasCtx.fillStyle = "rgba(0,0,0,0)";
+        const tmpStroke = canvasCtx.strokeStyle;
+        canvasCtx.strokeStyle = color;
+
+        drawPath(canvasCtx, arrowTranslated, false, false);
+
         canvasCtx.fillStyle = tmpFill;
         canvasCtx.strokeStyle = tmpStroke;
     };
@@ -286,7 +323,7 @@ export default function Canvas({
     const onMouseUp = () => {
         if (dragging && oldMouse) {
             const selectedAreas = quads.filter(a => a.isSelected);
-            const movement: Point = [mouse.x! - oldMouse[0], mouse.y! - oldMouse[1]];
+            const movement: Vector = [mouse.x! - oldMouse[0], mouse.y! - oldMouse[1]];
             const updated = selectedAreas.map(a => {
                 a.shape = a.shape.map((p, i) => {
                     if (dragIndexes && dragIndexes.some(n => n === i))

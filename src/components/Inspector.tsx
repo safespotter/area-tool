@@ -3,7 +3,7 @@ import { Button } from '@material-ui/core';
 import { Clear, Check, CheckBoxOutlined } from '@material-ui/icons';
 import { order } from '../utilities/data';
 import { dot, vecSum } from '../utilities/shapes';
-import { Area, AreaDictionary, IIndexable, Point } from '../utilities/types';
+import { Area, AreaDictionary, IIndexable, Vector } from '../utilities/types';
 
 import './Inspector.scss';
 
@@ -47,7 +47,7 @@ export default function Inspector({ target, update, selectById }: InspectorProps
 
     function renderAD(a: AreaDictionary) {
 
-        const renderPoint = (p: Point, key: string, ref: AreaDictionary) => {
+        const renderPoint = (p: Vector, key: string, ref: AreaDictionary) => {
             return p.map((val, i) => {
                 return (
                     <td key={`${key}${i}`}>
