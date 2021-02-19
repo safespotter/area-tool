@@ -289,7 +289,7 @@ export default function Canvas({
             const movement: Point = [mouse.x! - oldMouse[0], mouse.y! - oldMouse[1]];
             const updated = selectedAreas.map(a => {
                 a.shape = a.shape.map((p, i) => {
-                    if (!dragIndexes || dragIndexes.some(n => n === i))
+                    if (dragIndexes && dragIndexes.some(n => n === i))
                         return snapToShapes(vecSum(p, movement), quads.filter(b => b.id !== a.id).map(b => b.shape));
                     else return p;
                 });
@@ -303,7 +303,7 @@ export default function Canvas({
     };
     const onMouseLeave = () => {
         setPoints([]);
-        if (dragging && !dragIndexes) {
+        if (dragging && dragIndexes?.length === 4) {
             setDragging(false);
             setOldMouse(null);
             deleteQuads(quads.filter(q => q.isSelected));
