@@ -8,8 +8,8 @@ const CANVAS_W = 1920;
 const CANVAS_H = 1080;
 const POINT_RADIUS = 5;
 const SNAP_DISTANCE = 25;
-// const ARROW_SCALE = .25;
-const ARROW_SIZE = 50;
+const ARROW_SCALE = .25;
+// const ARROW_SIZE = 50;
 
 const alpha = .25;
 
@@ -261,6 +261,7 @@ export default function Canvas({
 
         const lenUp = distancePointToPoint(quad[2], quad[1]) + distancePointToPoint(quad[3], quad[0]);
         const lenRight = distancePointToPoint(quad[2], quad[3]) + distancePointToPoint(quad[1], quad[0]);
+        const ratio = lenUp / lenRight;
 
         // arrow in 1by1 square
         let arrow: Shape = [[-.5, -.5], [0, .5], [.5, -.5], [0, -.3]];
@@ -269,8 +270,11 @@ export default function Canvas({
         // flip since we draw from topLeft down
         arrow = arrow.map(v => [v[0], -v[1]]);
         // scale down
-        // arrow = arrow.map(v => vecScale(v, .25 /* ARROW_SCALE */));
-        arrow = arrow.map(v => [v[0] * ARROW_SIZE * 2 / lenRight, v[1] * ARROW_SIZE * 2 / lenUp]);
+        arrow = arrow.map(v => vecScale(v, ARROW_SCALE));
+        // arrow = arrow.map(v => [v[0] * ARROW_SIZE * 2 / lenRight, v[1] * ARROW_SIZE * 2 / lenUp]);
+        arrow = ratio > 1
+            ? arrow.map(v => [v[0], v[1] / ratio])
+            : arrow.map(v => [v[0] * ratio, v[1]]);
         // move between 0,0 - 1,1
         arrow = arrow.map(v => vecSum(v, [.5, .5]));
         // apply perspective scaling
