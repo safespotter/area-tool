@@ -1,14 +1,14 @@
 import React, { useRef, useState, useEffect } from 'react';
 import './Canvas.scss';
 import { Area, Vector, Shape, Tool } from '../utilities/types';
-import { distancePointToPoint, projectPointToSegment, findPointInShapeIndex, vecSum, vecScale, vecFromCoordinateSystem, centroidOfShape, dirShapeToShape, isPointInShape, vecRotate } from '../utilities/shapes';
+import { distancePointToPoint, projectPointToSegment, findPointInShapeIndex, vecSum, vecScale, vecFromCoordinateSystem, isPointInShape, vecRotate, vecSub, vecToCoordinateSystem } from '../utilities/shapes';
 import { order } from '../utilities/data';
 
 const CANVAS_W = 1920;
 const CANVAS_H = 1080;
 const POINT_RADIUS = 5;
 const SNAP_DISTANCE = 25;
-const ARROW_SIZE = 12;
+const ARROW_SCALE = .25;
 
 const alpha = .25;
 
@@ -16,10 +16,12 @@ const style1 = {
     width: 2,
     stroke: `rgb(250, 50, 50)`,
     fill: `rgba(250, 50, 50, ${alpha})`,
+    arrow: `rgba(250, 50, 50, ${alpha * 2})`,
     selected: {
         width: 2,
         stroke: `rgb(255, 200, 50)`,
         fill: `rgba(255, 200, 50, ${alpha})`,
+        arrow: `rgba(255, 200, 50, ${alpha * 2})`,
     },
 };
 
@@ -27,10 +29,12 @@ const style2 = {
     width: 2,
     stroke: `rgb(50, 50, 250)`,
     fill: `rgba(50, 50, 250, ${alpha})`,
+    arrow: `rgba(50, 50, 250, ${alpha * 2})`,
     selected: {
         width: 2,
         stroke: `rgb(50, 250, 250)`,
         fill: `rgba(50, 250, 250, ${alpha})`,
+        arrow: `rgba(50, 250, 250, ${alpha * 2})`,
     },
 };
 
@@ -112,7 +116,7 @@ export default function Canvas({
 
 
             drawPath(context, shape, quad.isSelected);
-            drawArrow(context, shape, quad.direction ?? [0, 0], style.stroke);
+            drawArrow(context, shape, quad.direction ?? [0, 0], style.arrow);
         }
 
         if (mouse.x && mouse.y) {
@@ -138,7 +142,6 @@ export default function Canvas({
     const snapToShapes = (pos: Vector, shapes: Shape[]) => {
         // give priority to points instead of edges
         // find the closest point
-        console.log(canvasW, canvasH);
         shapes.push([[0, 0], [canvasW, 0], [canvasW, canvasH], [0, canvasH]]); // add boundaries
         let [minDist, newPoint] = shapes.flat().reduce(([dist, point]: [number, Vector | null], p) => {
             const d = distancePointToPoint(pos, p);
@@ -236,29 +239,54 @@ export default function Canvas({
     };
 
     const drawArrow = (canvasCtx: CanvasRenderingContext2D, quad: Vector[], dirVec: Vector, color = "#000") => {
-        const center = centroidOfShape(quad);
+        // vector that rappresents the Y of the area's coordinate space
+        const up = vecSub(quad[3], quad[0]);
+        // vector that rappresents the X of the area's coordinate space
+        const right = vecSub(quad[1], quad[0]);
+        // vector of the diagonal in canvas' coordinates
+        const diag = vecSub(quad[2], quad[0]);
+        // vector of the diagonal in the area's coordinates
+        const diagInPerspective = vecToCoordinateSystem(diag, up, right);
+        // Since we are using the vector not normalized we are in effect mapping 0,0 to the top left,
+        //   0,1 to the bottom left, 1,0 to top right and 1,1 to the bottom right point of our area.
+        // However since the sides aren't parallel we are in effect stretching the coordinate space along
+        //   the diagonal. By diving the difference between the lenght of the projection of the diagonal
+        //   on the axis and the lenght of the "axis" itself in the coordinate space of the area we can 
+        //   stretch the image by that amount to match have it fit and match the area's perspective.
+        // Since we are mapping the entire area in the square 0,0 - 1,1 the "axis" have lenght 1, 
+        //   so we can subtract 1 and skip the division.
+        const ratioX = diagInPerspective[0] - 1;
+        const ratioY = diagInPerspective[1] - 1;
 
-        const shapeUp = dirShapeToShape([quad[2], quad[3]], [quad[0], quad[1]]);
-        const shapeRight = dirShapeToShape([quad[3], quad[0]], [quad[1], quad[2]]);
-
-
-        let arrow: Shape = [[-1, 0], [0, 2], [1, 0]];
-        arrow = arrow.map(v => vecScale(v, ARROW_SIZE));
-
-        const dirVecOriented = vecFromCoordinateSystem(dirVec, shapeUp, shapeRight);
-        arrow = arrow.map(v => vecRotate(v, dirVecOriented));
-
-        // arrow = arrow.map(v => vecRotate(v, dirVec));
-        // arrow = arrow.map(v => vecFromCoordinateSystem(v, shapeUp, shapeRight));
-
-        arrow = arrow.map(v => vecSum(v, center));
+        // arrow in 1by1 square
+        let arrow: Shape = [[-.5, -.5], [0, .5], [.5, -.5], [0, -.3]];
+        // apply rotation
+        arrow = arrow.map(v => vecRotate(v, dirVec));
+        // flip since we draw from topLeft down
+        arrow = arrow.map(v => [v[0], -v[1]]);
+        // scale down
+        arrow = arrow.map(v => vecScale(v, ARROW_SCALE));
+        // move between 0,0 - 1,1
+        arrow = arrow.map(v => vecSum(v, [.5, .5]));
+        // apply perspective scaling
+        arrow = arrow.map(v => {
+            return [
+                v[0] + v[0] * v[1] * ratioX,
+                v[1] + v[0] * v[1] * ratioY,
+            ] as Vector;
+        });
+        // apply coordinate stretching
+        arrow = arrow.map(v => vecFromCoordinateSystem(v, up, right));
+        // move to the area
+        arrow = arrow.map(v => vecSum(v, quad[0]));
 
         const tmpFill = canvasCtx.fillStyle;
-        canvasCtx.fillStyle = "rgba(0,0,0,0)";
         const tmpStroke = canvasCtx.strokeStyle;
-        canvasCtx.strokeStyle = color;
+        // canvasCtx.fillStyle = "rgba(0,0,0,0)";
+        // canvasCtx.strokeStyle = color;
+        canvasCtx.fillStyle = color;
 
-        drawPath(canvasCtx, arrow, false, false);
+        drawPath(canvasCtx, arrow, false, true);
 
         canvasCtx.fillStyle = tmpFill;
         canvasCtx.strokeStyle = tmpStroke;

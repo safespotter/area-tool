@@ -105,6 +105,20 @@ export function vecFromCoordinateSystem(v: Vector, up: Vector, right: Vector): V
     return vecSum(vecScale(right, v[0]), vecScale(up, v[1]));
 }
 
+export function vecToCoordinateSystem(v: Vector, up: Vector, right: Vector): Vector {
+    /* 
+        x1 = rx * x + ux * y 
+        y1 = ry * x + uy * y
+
+        x = (x1 - ux * y) / rx = (y1 - uy * y) / ry => 
+        x1 * ry - ux * ry * y = y1 * rx - uy * rx * y =>
+        y = (x1 * ry - y1 * rx) / (ux * ry - uy * rx)
+     */
+    const y = (v[0] * right[1] - v[1] * right[0]) / (up[0] * right[1] - up[1] * right[0]);
+    const x = (v[0] - up[0] * y) / right[0];
+    return [x, y];
+}
+
 export function vecRotate(v: Vector, upRotated: Vector): Vector {
     const up = vecScale(upRotated, 1 / vecLen(upRotated));
     const right = [up[1], -up[0]] as Vector;
