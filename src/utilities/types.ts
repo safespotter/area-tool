@@ -29,4 +29,9 @@ export type AreaDictionary = {
 
 export interface IIndexable<T = any> { [key: string]: T; }
 
+export type Options = {
+    ids: boolean;
+    arrows: boolean;
+};
+
 export { Area } from "./area";

@@ -2,11 +2,12 @@ import React, { useEffect, useState } from 'react';
 import './App.scss';
 import Video from './components/Video';
 import FilePicker from './components/FilePicker';
-import { Area, Vector, Shape, Tool } from './utilities/types';
+import { Area, Tool, Options } from './utilities/types';
 import ToolSelector from './components/ToolSelector';
 import Canvas from './components/Canvas';
 import Inspector from './components/Inspector';
 import { IOManager } from './components/IOManager';
+import OptionSelector from './components/OptionSelector';
 
 
 export default function App() {
@@ -17,6 +18,7 @@ export default function App() {
     const [slider, setSlider] = useState<number | undefined>();
     const [quadList, setQuadList] = useState<Area[]>([]);
     const [tool, setTool] = useState<Tool>(Tool.ADD);
+    const [options, setOptions] = useState<Options>({ ids: true, arrows: true, });
 
     useEffect(() => {
         if (file) {
@@ -50,6 +52,12 @@ export default function App() {
     return (
         <div className="App">
             <div>
+                <div className="BlockButtons">
+                    <OptionSelector
+                        options={options}
+                        updateOptions={setOptions}
+                    />
+                </div>
                 <div className="BlockCanvas">
                     <Canvas
                         img={video}
@@ -62,6 +70,7 @@ export default function App() {
                         slider={slider}
                         width={video?.videoWidth || undefined}
                         height={video?.videoHeight || undefined}
+                        options={options}
                     />
                     <Video
                         source={videoSrc}

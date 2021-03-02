@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
 import './Canvas.scss';
-import { Area, Vector, Shape, Tool, DirKeys } from '../utilities/types';
+import { Area, Vector, Shape, Tool, DirKeys, Options } from '../utilities/types';
 import { distancePointToPoint, projectPointToSegment, findPointInShapeIndex, vecSum, vecScale, vecFromCoordinateSystem, isPointInShape, vecRotate, vecSub, vecToCoordinateSystem, centroidOfShape } from '../utilities/shapes';
 import { order } from '../utilities/data';
 
@@ -10,8 +10,6 @@ const POINT_RADIUS = 5;
 const SNAP_DISTANCE = 25;
 const ARROW_SCALE = .1;
 const ID_SIZE = 48;
-
-let showDirections = true;
 
 const alpha = .25;
 
@@ -52,10 +50,11 @@ export interface CanvasProps {
     slider?: number;
     width?: number;
     height?: number;
+    options?: Options;
 };
 
 export default function Canvas({
-    img, quads, newQuad, tool, setSelected, updateQuads, deleteQuads, slider, width, height
+    img, quads, newQuad, tool, setSelected, updateQuads, deleteQuads, slider, width, height, options = { ids: true, arrows: true }
 }: CanvasProps) {
 
     const [points, setPoints] = useState<Shape>([]);
@@ -91,7 +90,7 @@ export default function Canvas({
 
         // Finished Quads
         for (const quad of quads) {
-            drawArea(context, quad, showDirections);
+            drawArea(context, quad);
         }
 
         if (mouse.x && mouse.y) {
@@ -112,7 +111,7 @@ export default function Canvas({
 
 
         }
-    }, [img, quads, tool, mouse, points, slider, width]);
+    }, [img, quads, tool, mouse, points, slider, width, options]);
 
     const snapToShapes = (pos: Vector, shapes: Shape[]) => {
         if (modifier) return pos;
@@ -317,7 +316,7 @@ export default function Canvas({
         canvasCtx.lineWidth = tmpWidth;
     };
 
-    const drawArea = (canvasCtx: CanvasRenderingContext2D, area: Area, showDirections = true) => {
+    const drawArea = (canvasCtx: CanvasRenderingContext2D, area: Area) => {
         let movement: Vector = [0, 0];
         // Drag
         if (dragging && oldMouse) {
@@ -353,10 +352,9 @@ export default function Canvas({
         canvasCtx.strokeStyle = style.stroke;
         canvasCtx.fillStyle = style.fill;
 
-        drawText(canvasCtx, area.id.toString(), center, ID_SIZE, style.stroke);
-
         drawPath(canvasCtx, shape, area.isSelected, true);
-        if (showDirections) drawArrows(canvasCtx, shape, area.direction, style.stroke);
+        if (options.ids) drawText(canvasCtx, area.id.toString(), center, ID_SIZE, style.stroke);
+        if (options.arrows || tool === Tool.SET_DIRECTIONS) drawArrows(canvasCtx, shape, area.direction, style.stroke);
         if (area.isParking) drawParking(canvasCtx, shape, style.stroke);
 
         canvasCtx.lineWidth = tmp.lw;
