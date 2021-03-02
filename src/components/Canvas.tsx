@@ -60,6 +60,7 @@ export default function Canvas({
 
     const [points, setPoints] = useState<Shape>([]);
     const [dragging, setDragging] = useState<boolean>(false);
+    const [modifier, setModifier] = useState<boolean>(false);
     const [oldMouse, setOldMouse] = useState<Vector | null>(null);
     const [dragIndexes, setDragIndexes] = useState<number[] | null>(null);
 
@@ -130,6 +131,8 @@ export default function Canvas({
     }, [img, quads, tool, mouse, points, slider, width]);
 
     const snapToShapes = (pos: Vector, shapes: Shape[]) => {
+        if (modifier) return pos;
+
         // give priority to points instead of edges
         // find the closest point
         shapes.push([[0, 0], [canvasW, 0], [canvasW, canvasH], [0, canvasH]]); // add boundaries
@@ -454,6 +457,8 @@ export default function Canvas({
                 x: (e.pageX - topLeft[0]) / ratio,
                 y: (e.pageY - topLeft[1]) / ratio,
             });
+
+            if (e.ctrlKey != modifier) setModifier(e.ctrlKey);
         }
     };
 
