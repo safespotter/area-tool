@@ -89,6 +89,7 @@ export default function App() {
                     target={quadList}
                     update={updateQuads}
                     selectById={setSelectedById}
+                    deleteById={(id) => deleteQuads(quadList.filter(q => q.id === id))}
                 />
             </div>
         </div>

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Button } from '@material-ui/core';
-import { Clear, Check, CheckBoxOutlined } from '@material-ui/icons';
+import { Clear, Check, CheckBoxOutlined, Delete } from '@material-ui/icons';
 import { order } from '../utilities/data';
 import { dot, vecSum } from '../utilities/shapes';
 import { Area, AreaDictionary, IIndexable, Vector } from '../utilities/types';
@@ -11,9 +11,10 @@ type InspectorProps = {
     target: Area[];
     update: (updated: Area[]) => void;
     selectById: (id: number) => void;
+    deleteById: (id: number) => void;
 };
 
-export default function Inspector({ target, update, selectById }: InspectorProps) {
+export default function Inspector({ target, update, selectById, deleteById }: InspectorProps) {
 
     const [inspected, setInspected] = useState<AreaDictionary[]>();
     const updateInspected = (updated: AreaDictionary, changed = true) => {
@@ -84,6 +85,16 @@ export default function Inspector({ target, update, selectById }: InspectorProps
 
         return (
             <tr key={a.id} onClick={() => selectById(a.id)} className={a.ref?.isSelected ? "selected" : ""}>
+                <td key="delete" className="delete">
+                    <Button variant="contained" color="secondary"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            deleteById(a.id);
+                        }}
+                    >
+                        <Delete />
+                    </Button>
+                </td>
                 <td key="id">
                     <div className="id"> {a.id} </div>
                 </td>
@@ -151,6 +162,7 @@ export default function Inspector({ target, update, selectById }: InspectorProps
             <table>
                 <thead>
                     <tr>
+                        <th />
                         <th>ID      </th>
                         <th>luX     </th>
                         <th>luY     </th>
