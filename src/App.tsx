@@ -75,6 +75,7 @@ export default function App() {
                         value={tool}
                         onAdd={() => { setTool(Tool.ADD); setSelected(-1); }}
                         onSelect={() => { setTool(Tool.SELECT); setSelected(-1); }}
+                        onSetDirections={() => { setTool(Tool.SET_DIRECTIONS); }}
                     />
                     <FilePicker setFile={setFile} accept_types="video/*" />
                     <IOManager

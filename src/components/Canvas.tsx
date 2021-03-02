@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
 import './Canvas.scss';
-import { Area, Vector, Shape, Tool } from '../utilities/types';
+import { Area, Vector, Shape, Tool, DirKeys } from '../utilities/types';
 import { distancePointToPoint, projectPointToSegment, findPointInShapeIndex, vecSum, vecScale, vecFromCoordinateSystem, isPointInShape, vecRotate, vecSub, vecToCoordinateSystem, centroidOfShape } from '../utilities/shapes';
 import { order } from '../utilities/data';
 
@@ -432,6 +432,34 @@ export default function Canvas({
         }
     };
 
+    const handleSetDirections = () => {
+        const pos = [mouse.x, mouse.y] as Vector;
+        const targetArea = quads.find(q => isPointInShape(pos, q.shape));
+        if (!targetArea) return;
+
+        const shape = targetArea.shape;
+        const center = centroidOfShape(shape);
+        const sectors = {
+            up: [shape[0], shape[1], center] as Shape,
+            down: [shape[2], shape[3], center] as Shape,
+            right: [shape[1], shape[2], center] as Shape,
+            left: [shape[3], shape[0], center] as Shape,
+        };
+
+        const selectedDir: DirKeys | null = (() => {
+            for (const [k, v] of Object.entries(sectors)) {
+                if (isPointInShape(pos, v)) return k as DirKeys;
+            }
+            return null;
+        })();
+
+        if (!selectedDir) return;
+
+        targetArea.direction[selectedDir] = !targetArea.direction[selectedDir];
+
+        updateQuads([targetArea]);
+    };
+
     const onMouseDown = () => {
         switch (tool) {
             case Tool.ADD:
@@ -440,8 +468,11 @@ export default function Canvas({
             case Tool.SELECT:
                 handleSelect();
                 break;
+            case Tool.SET_DIRECTIONS:
+                handleSetDirections();
+                break;
             default:
-                throw Error("No tool selected???");
+                throw Error("Tool not implemented");
         }
     };
 
