@@ -8,15 +8,19 @@ export class Area {
     readonly id: number;
     public shape: Shape;
     public isCarWalkable = true;
-    public direction: Vector | null = null;
+    public direction = {
+        left: true,
+        up: true,
+        right: true,
+        down: true,
+    };
     public isParking = false;
     public stop: string | null = null;
     public isSelected = false;
 
-    constructor(quad?: Shape, direction?: Vector) {
+    constructor(quad?: Shape) {
         this.id = Area.newId();
         this.shape = quad ?? [[-1, -1], [-1, -1], [-1, -1], [-1, -1]];
-        if (direction) this.direction = direction;
     }
 
     static newId() {
@@ -35,12 +39,7 @@ export class Area {
                 lb: points[3].map(x => Math.round(x)) as Vector,
             },
             carWalk: this.isCarWalkable,
-            dir: {
-                left: dot(dir, [-1, 0]) > .25 ? true : false,
-                up: dot(dir, [0, 1]) > .25 ? true : false,
-                right: dot(dir, [1, 0]) > .25 ? true : false,
-                down: dot(dir, [0, -1]) > .25 ? true : false,
-            },
+            dir: this.direction,
             parking: this.isParking,
             stop: `${this.stop ?? "None"}`,
             ref: this,
@@ -56,9 +55,7 @@ export class Area {
             up: [0, 1],
             down: [0, -1],
         };
-        this.direction = Object.entries(ad.dir)
-            .map(([k, v]) => v ? (dirs as IIndexable)[k] : [0, 0])
-            .reduce((res, vec) => vecSum(res, vec));
+        this.direction = ad.dir;
 
         this.isParking = ad.parking;
         this.stop = ad.stop;

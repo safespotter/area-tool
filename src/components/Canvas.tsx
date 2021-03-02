@@ -117,7 +117,7 @@ export default function Canvas({
 
 
             drawPath(context, shape, quad.isSelected);
-            drawArrow(context, shape, quad.direction ?? [0, 0], style.arrow);
+            drawArrow(context, shape, [0, 1], style.arrow);
             if (quad.isParking) drawParking(context, shape, "#f3f");
         }
 
@@ -196,7 +196,7 @@ export default function Canvas({
         const updatedShape = [pos, ...points];
 
         if (updatedShape.length === 4) {
-            const newArea = new Area(order(updatedShape), [0, 1]);
+            const newArea = new Area(order(updatedShape));
             newArea.isSelected = true;
             setSelected(-1);
             newQuad(newArea);
