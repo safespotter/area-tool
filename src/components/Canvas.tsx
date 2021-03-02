@@ -271,7 +271,7 @@ export default function Canvas({
 
         const lenUp = distancePointToPoint(quad[2], quad[1]) + distancePointToPoint(quad[3], quad[0]);
         const lenRight = distancePointToPoint(quad[2], quad[3]) + distancePointToPoint(quad[1], quad[0]);
-        const ratio = lenUp / lenRight;
+        const ratio = lenUp / (lenRight != 0 ? lenRight : .000000001);
 
         // up arrow in 1by1 square
         let upArrow: Shape = [[-.5, -.5], [0, .5], [.5, -.5]];
