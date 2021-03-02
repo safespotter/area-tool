@@ -11,6 +11,8 @@ const SNAP_DISTANCE = 25;
 const ARROW_SCALE = .25;
 // const ARROW_SIZE = 50;
 
+let showDirections = true;
+
 const alpha = .25;
 
 const style1 = {
@@ -86,12 +88,6 @@ export default function Canvas({
             context.fillRect(0, 0, canvas.width, canvas.height);
         }
 
-        let movement: Vector = [0, 0];
-        // Drag
-        if (dragging && oldMouse) {
-            movement = [mouse.x! - oldMouse[0], mouse.y! - oldMouse[1]] as Vector;
-        }
-
         // Finished Quads
         for (const quad of quads) {
             let style;
@@ -107,18 +103,10 @@ export default function Canvas({
             context.strokeStyle = style.stroke;
             context.fillStyle = style.fill;
 
-            const shape = quad.isSelected
-                ? quad.shape.map((p, i) => {
-                    if (dragIndexes && dragIndexes.some(n => n === i))
-                        return snapToShapes(vecSum(p, movement), quads.filter(a => a.id !== quad.id).map(a => a.shape));
-                    else return p;
-                })
-                : quad.shape;
-
-
-            drawPath(context, shape, quad.isSelected);
-            drawArrow(context, shape, [0, 1], style.arrow);
-            if (quad.isParking) drawParking(context, shape, "#f3f");
+            drawArea(context, quad, showDirections);
+            // drawPath(context, shape, quad.isSelected);
+            // drawArrow(context, shape, [0, 1], style.arrow);
+            // if (quad.isParking) drawParking(context, shape, "#f3f");
         }
 
         if (mouse.x && mouse.y) {
@@ -214,11 +202,11 @@ export default function Canvas({
             canvasCtx.lineTo(p[0], p[1]);
         }
 
-        if (close)
+        if (close) {
             canvasCtx.closePath();
-
+            canvasCtx.fill();
+        }
         canvasCtx.stroke();
-        canvasCtx.fill();
 
         if (f_drawPoints) {
             for (const p of points)
@@ -240,7 +228,28 @@ export default function Canvas({
         canvasCtx.strokeStyle = tmpStroke;
     };
 
-    const drawArrow = (canvasCtx: CanvasRenderingContext2D, quad: Vector[], dirVec: Vector, color = "#000") => {
+    const drawParking = (canvasCtx: CanvasRenderingContext2D, quad: Vector[], color = "#000") => {
+
+        if (quad.length !== 4) return;
+
+        const tmpStroke = canvasCtx.strokeStyle;
+        const tmpWidth = canvasCtx.lineWidth;
+        canvasCtx.strokeStyle = color;
+        canvasCtx.lineWidth = 3;
+
+        drawPath(canvasCtx, [quad[0], quad[2]], false, false);
+        drawPath(canvasCtx, [quad[1], quad[3]], false, false);
+
+        canvasCtx.strokeStyle = tmpStroke;
+        canvasCtx.lineWidth = tmpWidth;
+    };
+
+    const drawArrows = (
+        canvasCtx: CanvasRenderingContext2D,
+        quad: Vector[],
+        directions: { left: boolean, up: boolean, right: boolean, down: boolean; },
+        color = "#000"
+    ) => {
         // vector that rappresents the Y of the area's coordinate space
         const up = vecSub(quad[3], quad[0]);
         // vector that rappresents the X of the area's coordinate space
@@ -264,42 +273,81 @@ export default function Canvas({
         const lenRight = distancePointToPoint(quad[2], quad[3]) + distancePointToPoint(quad[1], quad[0]);
         const ratio = lenUp / lenRight;
 
-        // arrow in 1by1 square
-        let arrow: Shape = [[-.5, -.5], [0, .5], [.5, -.5], [0, -.3]];
-        // apply rotation
-        arrow = arrow.map(v => vecRotate(v, dirVec));
-        // flip since we draw from topLeft down
-        arrow = arrow.map(v => [v[0], -v[1]]);
+        // up arrow in 1by1 square
+        let upArrow: Shape = [[-.5, -.5], [0, .5], [.5, -.5]];
         // scale down
-        arrow = arrow.map(v => vecScale(v, ARROW_SCALE));
-        // arrow = arrow.map(v => [v[0] * ARROW_SIZE * 2 / lenRight, v[1] * ARROW_SIZE * 2 / lenUp]);
-        arrow = ratio > 1
-            ? arrow.map(v => [v[0], v[1] / ratio])
-            : arrow.map(v => [v[0] * ratio, v[1]]);
-        // move between 0,0 - 1,1
-        arrow = arrow.map(v => vecSum(v, [.5, .5]));
-        // apply perspective scaling
-        arrow = arrow.map(v => {
-            return [
-                v[0] + v[0] * v[1] * ratioX,
-                v[1] + v[0] * v[1] * ratioY,
-            ] as Vector;
-        });
-        // apply coordinate stretching
-        arrow = arrow.map(v => vecFromCoordinateSystem(v, up, right));
-        // move to the area
-        arrow = arrow.map(v => vecSum(v, quad[0]));
+        upArrow = upArrow.map(v => vecScale(v, ARROW_SCALE));
 
-        const tmpFill = canvasCtx.fillStyle;
+        const dirVecs: (Vector | null)[] = [
+            directions.up ? [0, .5] : null,
+            directions.down ? [0, -.5] : null,
+            directions.right ? [.5, 0] : null,
+            directions.left ? [-.5, 0] : null,
+        ];
+
+        const arrows = [];
+        for (const dirVec of dirVecs) {
+            if (!dirVec) continue;
+            // apply rotation
+            let arrow = [...upArrow];
+            arrow = arrow.map(v => vecRotate(v, dirVec));
+
+            arrow = ratio > 1
+                ? arrow.map(v => [v[0], v[1] / ratio])
+                : arrow.map(v => [v[0] * ratio, v[1]]);
+
+            // attach to borders
+            const translation = vecSub(dirVec, arrow[1]);
+            arrow = arrow.map(v => vecSum(v, translation));
+            // flip since we draw from topLeft down
+            arrow = arrow.map(v => [v[0], -v[1]]);
+            // move between 0,0 - 1,1
+            arrow = arrow.map(v => vecSum(v, [.5, .5]));
+            // apply perspective scaling
+            arrow = arrow.map(v => {
+                return [
+                    v[0] + v[0] * v[1] * ratioX,
+                    v[1] + v[0] * v[1] * ratioY,
+                ] as Vector;
+            });
+            // apply coordinate stretching
+            arrow = arrow.map(v => vecFromCoordinateSystem(v, up, right));
+            // move to the area
+            arrow = arrow.map(v => vecSum(v, quad[0]));
+            arrows.push(arrow);
+        }
+
         const tmpStroke = canvasCtx.strokeStyle;
-        // canvasCtx.fillStyle = "rgba(0,0,0,0)";
-        // canvasCtx.strokeStyle = color;
-        canvasCtx.fillStyle = color;
+        const tmpWidth = canvasCtx.lineWidth;
+        canvasCtx.strokeStyle = color;
+        canvasCtx.lineWidth = 5;
 
-        drawPath(canvasCtx, arrow, false, true);
+        for (const arrow of arrows) {
+            drawPath(canvasCtx, arrow, false, false);
+        }
 
-        canvasCtx.fillStyle = tmpFill;
         canvasCtx.strokeStyle = tmpStroke;
+        canvasCtx.lineWidth = tmpWidth;
+    };
+
+    const drawArea = (canvasCtx: CanvasRenderingContext2D, area: Area, showDirections = true) => {
+        let movement: Vector = [0, 0];
+        // Drag
+        if (dragging && oldMouse) {
+            movement = [mouse.x! - oldMouse[0], mouse.y! - oldMouse[1]] as Vector;
+        }
+
+        const shape = area.isSelected
+            ? area.shape.map((p, i) => {
+                if (dragIndexes && dragIndexes.some(n => n === i))
+                    return snapToShapes(vecSum(p, movement), quads.filter(a => a.id !== area.id).map(a => a.shape));
+                else return p;
+            })
+            : area.shape;
+
+        drawPath(canvasCtx, shape, area.isSelected, true);
+        if (showDirections) drawArrows(canvasCtx, shape, area.direction, "#3d3");
+        if (area.isParking) drawParking(canvasCtx, shape, "#d3d");
     };
 
     const handleSelect = () => {
@@ -347,22 +395,6 @@ export default function Canvas({
             const target = findPointInShapeIndex([mouse.x, mouse.y], quads.map(a => a.shape));
             setSelected(target);
         }
-    };
-
-    const drawParking = (canvasCtx: CanvasRenderingContext2D, quad: Vector[], color = "#000") => {
-
-        if (quad.length !== 4) return;
-
-        const tmpStroke = canvasCtx.strokeStyle;
-        const tmpWidth = canvasCtx.lineWidth;
-        canvasCtx.strokeStyle = color;
-        canvasCtx.lineWidth = 3;
-
-        drawPath(canvasCtx, [quad[0], quad[2]], false, false);
-        drawPath(canvasCtx, [quad[1], quad[3]], false, false);
-
-        canvasCtx.strokeStyle = tmpStroke;
-        canvasCtx.lineWidth = tmpWidth;
     };
 
     const onMouseDown = () => {

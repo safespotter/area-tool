@@ -39,7 +39,7 @@ export class Area {
                 lb: points[3].map(x => Math.round(x)) as Vector,
             },
             carWalk: this.isCarWalkable,
-            dir: this.direction,
+            dir: { ...this.direction },
             parking: this.isParking,
             stop: `${this.stop ?? "None"}`,
             ref: this,
@@ -55,7 +55,7 @@ export class Area {
             up: [0, 1],
             down: [0, -1],
         };
-        this.direction = ad.dir;
+        this.direction = { ...ad.dir };
 
         this.isParking = ad.parking;
         this.stop = ad.stop;
