@@ -84,6 +84,9 @@ export default function Inspector({ target, update, selectById }: InspectorProps
 
         return (
             <tr key={a.id} onClick={() => selectById(a.id)} className={a.ref?.isSelected ? "selected" : ""}>
+                <td key="id">
+                    <div className="id"> {a.id} </div>
+                </td>
                 {renderedPoints}
                 <td key="iscarwalkable">
                     <input type="checkbox"
@@ -148,6 +151,7 @@ export default function Inspector({ target, update, selectById }: InspectorProps
             <table>
                 <thead>
                     <tr>
+                        <th>ID      </th>
                         <th>luX     </th>
                         <th>luY     </th>
                         <th>ruX     </th>

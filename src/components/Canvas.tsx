@@ -1,15 +1,15 @@
 import React, { useRef, useState, useEffect } from 'react';
 import './Canvas.scss';
 import { Area, Vector, Shape, Tool } from '../utilities/types';
-import { distancePointToPoint, projectPointToSegment, findPointInShapeIndex, vecSum, vecScale, vecFromCoordinateSystem, isPointInShape, vecRotate, vecSub, vecToCoordinateSystem } from '../utilities/shapes';
+import { distancePointToPoint, projectPointToSegment, findPointInShapeIndex, vecSum, vecScale, vecFromCoordinateSystem, isPointInShape, vecRotate, vecSub, vecToCoordinateSystem, centroidOfShape } from '../utilities/shapes';
 import { order } from '../utilities/data';
 
 const CANVAS_W = 1920;
 const CANVAS_H = 1080;
 const POINT_RADIUS = 5;
 const SNAP_DISTANCE = 25;
-const ARROW_SCALE = .25;
-// const ARROW_SIZE = 50;
+const ARROW_SCALE = .1;
+const ID_SIZE = 48;
 
 let showDirections = true;
 
@@ -91,23 +91,7 @@ export default function Canvas({
 
         // Finished Quads
         for (const quad of quads) {
-            let style;
-            if (quad.isCarWalkable) {
-                style = style1;
-            } else {
-                style = style2;
-            }
-            if (quad.isSelected)
-                style = style.selected;
-
-            context.lineWidth = style.width;
-            context.strokeStyle = style.stroke;
-            context.fillStyle = style.fill;
-
             drawArea(context, quad, showDirections);
-            // drawPath(context, shape, quad.isSelected);
-            // drawArrow(context, shape, [0, 1], style.arrow);
-            // if (quad.isParking) drawParking(context, shape, "#f3f");
         }
 
         if (mouse.x && mouse.y) {
@@ -348,9 +332,57 @@ export default function Canvas({
             })
             : area.shape;
 
+        const center = centroidOfShape(shape);
+
+        let style;
+        if (area.isCarWalkable) {
+            style = style1;
+        } else {
+            style = style2;
+        }
+        if (area.isSelected)
+            style = style.selected;
+
+
+        const tmp = {
+            lw: canvasCtx.lineWidth,
+            ss: canvasCtx.strokeStyle,
+            fs: canvasCtx.fillStyle,
+        };
+        canvasCtx.lineWidth = style.width;
+        canvasCtx.strokeStyle = style.stroke;
+        canvasCtx.fillStyle = style.fill;
+
+        drawText(canvasCtx, area.id.toString(), center, ID_SIZE, style.stroke);
+
         drawPath(canvasCtx, shape, area.isSelected, true);
-        if (showDirections) drawArrows(canvasCtx, shape, area.direction, "#3d3");
-        if (area.isParking) drawParking(canvasCtx, shape, "#d3d");
+        if (showDirections) drawArrows(canvasCtx, shape, area.direction, style.stroke);
+        if (area.isParking) drawParking(canvasCtx, shape, style.stroke);
+
+        canvasCtx.lineWidth = tmp.lw;
+        canvasCtx.strokeStyle = tmp.ss;
+        canvasCtx.fillStyle = tmp.fs;
+    };
+
+    const drawText = (canvasCtx: CanvasRenderingContext2D, text: string, center: Vector, size = 12, color = "#000") => {
+        const tmp = {
+            font: canvasCtx.font,
+            ta: canvasCtx.textAlign,
+            tb: canvasCtx.textBaseline,
+            fs: canvasCtx.fillStyle,
+        };
+
+        canvasCtx.font = `${size}px sans-serif`;
+        canvasCtx.textAlign = "center";
+        canvasCtx.textBaseline = "middle";
+        canvasCtx.fillStyle = color;
+
+        canvasCtx.fillText(text, center[0], center[1]);
+
+        canvasCtx.font = tmp.font;
+        canvasCtx.textAlign = tmp.ta;
+        canvasCtx.textBaseline = tmp.tb;
+        canvasCtx.fillStyle = tmp.fs;
     };
 
     const handleSelect = () => {
