@@ -118,6 +118,7 @@ export default function Canvas({
 
             drawPath(context, shape, quad.isSelected);
             drawArrow(context, shape, quad.direction ?? [0, 0], style.arrow);
+            if (quad.isParking) drawParking(context, shape, "#f3f");
         }
 
         if (mouse.x && mouse.y) {
@@ -346,6 +347,22 @@ export default function Canvas({
             const target = findPointInShapeIndex([mouse.x, mouse.y], quads.map(a => a.shape));
             setSelected(target);
         }
+    };
+
+    const drawParking = (canvasCtx: CanvasRenderingContext2D, quad: Vector[], color = "#000") => {
+
+        if (quad.length !== 4) return;
+
+        const tmpStroke = canvasCtx.strokeStyle;
+        const tmpWidth = canvasCtx.lineWidth;
+        canvasCtx.strokeStyle = color;
+        canvasCtx.lineWidth = 3;
+
+        drawPath(canvasCtx, [quad[0], quad[2]], false, false);
+        drawPath(canvasCtx, [quad[1], quad[3]], false, false);
+
+        canvasCtx.strokeStyle = tmpStroke;
+        canvasCtx.lineWidth = tmpWidth;
     };
 
     const onMouseDown = () => {
