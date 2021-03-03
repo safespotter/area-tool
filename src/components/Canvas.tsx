@@ -503,7 +503,6 @@ export default function Canvas({
     };
 
     const onMouseLeave = () => {
-        setPoints([]);
         if (dragging && dragIndexes?.length === 4) {
             setDragging(false);
             setDragIndexes(null);
@@ -540,6 +539,7 @@ export default function Canvas({
                 onKeyUp={e => { if (e.key === "Control") setModifier(false); }}
                 tabIndex={0}
                 onMouseEnter={() => ref.current?.focus()}
+                onBlur={() => setPoints([])}
             />
         </div>
     );
