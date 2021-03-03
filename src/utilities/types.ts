@@ -2,7 +2,7 @@ import { Area } from "./area";
 
 export type Vector = [number, number];
 export type Shape = Vector[];
-export enum Tool { ADD, SELECT, SET_DIRECTIONS };
+export enum Tool { ADD, SELECT, SET_DIRECTIONS, TOGGLE_TYPE };
 
 export type DirKeys = "left" | "right" | "up" | "down";
 

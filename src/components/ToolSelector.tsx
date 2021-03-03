@@ -8,9 +8,10 @@ type ToolSelectorProps = {
     onSelect?: () => void;
     onAdd?: () => void;
     onSetDirections?: () => void;
+    onToggleType?: () => void;
 };
 
-export default function ToolSelector({ value, onSelect, onAdd, onSetDirections }: ToolSelectorProps) {
+export default function ToolSelector({ value, onSelect, onAdd, onSetDirections, onToggleType }: ToolSelectorProps) {
     return (
         <div className="ToolSelector">
             {onAdd ? <Button
@@ -36,6 +37,15 @@ export default function ToolSelector({ value, onSelect, onAdd, onSetDirections }
                 onClick={onSetDirections}
             >
                 DIRECTIONS
+            </Button>
+                : ""}
+
+            {onToggleType ? <Button
+                variant={value === Tool.TOGGLE_TYPE ? "contained" : "outlined"}
+                color="secondary"
+                onClick={onToggleType}
+            >
+                TYPES
             </Button>
                 : ""}
         </div>

@@ -74,7 +74,7 @@ export default function App() {
                     />
                     <Video
                         source={videoSrc}
-                        setVideo={setVideo}
+                        setVideo={v => { setVideo(v); setQuadList([]); }}
                         setSlider={setSlider}
                         value={slider ?? 0}
                     />
@@ -85,6 +85,7 @@ export default function App() {
                         onAdd={() => { setTool(Tool.ADD); setSelected(-1); }}
                         onSelect={() => { setTool(Tool.SELECT); setSelected(-1); }}
                         onSetDirections={() => { setTool(Tool.SET_DIRECTIONS); setSelected(-1); }}
+                        onToggleType={() => { setTool(Tool.TOGGLE_TYPE); setSelected(-1); }}
                     />
                     <FilePicker setFile={setFile} accept_types="video/*" />
                     <IOManager

@@ -444,6 +444,22 @@ export default function Canvas({
         updateQuads([targetArea]);
     };
 
+    const handleToggleType = () => {
+        const pos = [mouse.x, mouse.y] as Vector;
+        const targetArea = quads.find(q => isPointInShape(pos, q.shape));
+        if (!targetArea) return;
+
+        if (targetArea.isCarWalkable) {
+            targetArea.isCarWalkable = false;
+            targetArea.direction = { up: false, right: false, left: false, down: false };
+        } else {
+            targetArea.isCarWalkable = true;
+            targetArea.direction = { up: true, right: true, left: true, down: true };
+        }
+
+        updateQuads([targetArea]);
+    };
+
     const onMouseDown = () => {
         switch (tool) {
             case Tool.ADD:
@@ -454,6 +470,9 @@ export default function Canvas({
                 break;
             case Tool.SET_DIRECTIONS:
                 handleSetDirections();
+                break;
+            case Tool.TOGGLE_TYPE:
+                handleToggleType();
                 break;
             default:
                 throw Error("Tool not implemented");
