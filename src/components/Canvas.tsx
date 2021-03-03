@@ -520,6 +520,7 @@ export default function Canvas({
                 onKeyDown={e => { if (e.key === "Control") setModifier(true); }}
                 onKeyUp={e => { if (e.key === "Control") setModifier(false); }}
                 tabIndex={0}
+                onMouseEnter={() => ref.current?.focus()}
             />
         </div>
     );
