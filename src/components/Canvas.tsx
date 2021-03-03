@@ -112,7 +112,7 @@ export default function Canvas({
 
 
         }
-    }, [img, quads, tool, mouse, points, slider, width, options]);
+    }, [img, quads, tool, mouse, modifier, points, slider, width, options]);
 
     const snapToShapes = (pos: Vector, shapes: Shape[]) => {
         if (modifier) return pos;
@@ -504,8 +504,6 @@ export default function Canvas({
                 x: (e.pageX - topLeft[0]) / ratio,
                 y: (e.pageY - topLeft[1]) / ratio,
             });
-
-            if (e.ctrlKey != modifier) setModifier(e.ctrlKey);
         }
     };
 
@@ -519,6 +517,9 @@ export default function Canvas({
                 onMouseMove={e => onMouseMove(e)}
                 width={width ?? CANVAS_W}
                 height={height ?? CANVAS_H}
+                onKeyDown={e => { if (e.key === "Control") setModifier(true); }}
+                onKeyUp={e => { if (e.key === "Control") setModifier(false); }}
+                tabIndex={0}
             />
         </div>
     );
