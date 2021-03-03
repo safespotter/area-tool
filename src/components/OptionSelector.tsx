@@ -2,7 +2,7 @@ import React from 'react';
 import { Options } from '../utilities/types';
 import { Button } from '@material-ui/core';
 import './OptionSelector.scss';
-import { ArrowForward } from '@material-ui/icons';
+import { ArrowUpward } from '@material-ui/icons';
 
 type OptionSelectorProps = {
     options: Options;
@@ -23,7 +23,7 @@ export default function OptionSelector({ options, updateOptions }: OptionSelecto
                 variant={options.arrows ? "contained" : "outlined"}
                 onClick={() => updateOptions({ ...options, arrows: !options.arrows })}
             >
-                <ArrowForward />
+                <ArrowUpward />
             </Button>
         </div>
     );

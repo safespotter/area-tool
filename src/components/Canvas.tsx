@@ -1,14 +1,15 @@
 import React, { useRef, useState, useEffect } from 'react';
 import './Canvas.scss';
 import { Area, Vector, Shape, Tool, DirKeys, Options } from '../utilities/types';
-import { distancePointToPoint, projectPointToSegment, findPointInShapeIndex, vecSum, vecScale, vecFromCoordinateSystem, isPointInShape, vecRotate, vecSub, vecToCoordinateSystem, centroidOfShape } from '../utilities/shapes';
+import { distancePointToPoint, projectPointToSegment, findPointInShapeIndex, vecSum, vecScale, vecFromCoordinateSystem, isPointInShape, vecRotate, vecSub, vecToCoordinateSystem, centroidOfShape, vecNegative } from '../utilities/shapes';
 import { order } from '../utilities/data';
 
 const CANVAS_W = 1920;
 const CANVAS_H = 1080;
 const POINT_RADIUS = 5;
 const SNAP_DISTANCE = 25;
-const ARROW_SCALE = .1;
+// const ARROW_SCALE = .1;
+const ARROW_SIZE = 16;
 const ID_SIZE = 48;
 
 const alpha = .25;
@@ -234,85 +235,67 @@ export default function Canvas({
         canvasCtx: CanvasRenderingContext2D,
         quad: Vector[],
         directions: { left: boolean, up: boolean, right: boolean, down: boolean; },
-        color = "#000"
+        color = "#000",
+        f_close = false
     ) => {
-        // vector that rappresents the Y of the area's coordinate space
-        const up = vecSub(quad[3], quad[0]);
-        // vector that rappresents the X of the area's coordinate space
-        const right = vecSub(quad[1], quad[0]);
-        // vector of the diagonal in canvas' coordinates
-        const diag = vecSub(quad[2], quad[0]);
-        // vector of the diagonal in the area's coordinates
-        const diagInPerspective = vecToCoordinateSystem(diag, up, right);
-        // Since we are using the vector not normalized we are in effect mapping 0,0 to the top left,
-        //   0,1 to the bottom left, 1,0 to top right and 1,1 to the bottom right point of our area.
-        // However since the sides aren't parallel we are in effect stretching the coordinate space along
-        //   the diagonal. By diving the difference between the lenght of the projection of the diagonal
-        //   on the axis and the lenght of the "axis" itself in the coordinate space of the area we can 
-        //   stretch the image by that amount to match have it fit and match the area's perspective.
-        // Since we are mapping the entire area in the square 0,0 - 1,1 the "axis" have lenght 1, 
-        //   so we can subtract 1 and skip the division.
-        const ratioX = diagInPerspective[0] - 1;
-        const ratioY = diagInPerspective[1] - 1;
 
-        const lenUp = distancePointToPoint(quad[2], quad[1]) + distancePointToPoint(quad[3], quad[0]);
-        const lenRight = distancePointToPoint(quad[2], quad[3]) + distancePointToPoint(quad[1], quad[0]);
-        const ratio = lenUp / (lenRight != 0 ? lenRight : .000000001);
+        let arrow: Shape = [[-.7, -1], [0, 1], [.7, -1]];
+        arrow = arrow.map(vec => vecScale(vec, ARROW_SIZE));
 
-        // up arrow in 1by1 square
-        let upArrow: Shape = [[-.5, -.5], [0, .5], [.5, -.5]];
-        // scale down
-        upArrow = upArrow.map(v => vecScale(v, ARROW_SCALE));
+        const topMid = centroidOfShape([quad[0], quad[1]]);
+        const botMid = centroidOfShape([quad[2], quad[3]]);
+        const rightMid = centroidOfShape([quad[1], quad[2]]);
+        const leftMid = centroidOfShape([quad[3], quad[0]]);
 
-        const dirVecs: (Vector | null)[] = [
-            directions.up ? [0, .5] : null,
-            directions.down ? [0, -.5] : null,
-            directions.right ? [.5, 0] : null,
-            directions.left ? [-.5, 0] : null,
-        ];
+        const up = vecSub(topMid, botMid);
+        const right = vecSub(rightMid, leftMid);
 
-        const arrows = [];
-        for (const dirVec of dirVecs) {
-            if (!dirVec) continue;
-            // apply rotation
-            let arrow = [...upArrow];
-            arrow = arrow.map(v => vecRotate(v, dirVec));
+        const arrows = Object.entries(directions).map(([k, v]) => {
+            if (!v) return null;
+            let dir: Vector, anchor: Vector;
+            switch (k) {
+                case "up":
+                    dir = up;
+                    anchor = topMid;
+                    break;
+                case "down":
+                    dir = vecNegative(up);
+                    anchor = botMid;
+                    break;
+                case "right":
+                    dir = right;
+                    anchor = rightMid;
+                    break;
+                case "left":
+                    dir = vecNegative(right);
+                    anchor = leftMid;
+                    break;
+                default:
+                    return null;
+            }
 
-            arrow = ratio > 1
-                ? arrow.map(v => [v[0], v[1] / ratio])
-                : arrow.map(v => [v[0] * ratio, v[1]]);
-
-            // attach to borders
-            const translation = vecSub(dirVec, arrow[1]);
-            arrow = arrow.map(v => vecSum(v, translation));
-            // flip since we draw from topLeft down
-            arrow = arrow.map(v => [v[0], -v[1]]);
-            // move between 0,0 - 1,1
-            arrow = arrow.map(v => vecSum(v, [.5, .5]));
-            // apply perspective scaling
-            arrow = arrow.map(v => {
-                return [
-                    v[0] + v[0] * v[1] * ratioX,
-                    v[1] + v[0] * v[1] * ratioY,
-                ] as Vector;
-            });
-            // apply coordinate stretching
-            arrow = arrow.map(v => vecFromCoordinateSystem(v, up, right));
-            // move to the area
-            arrow = arrow.map(v => vecSum(v, quad[0]));
-            arrows.push(arrow);
-        }
+            const rotated = arrow.map(vec => vecRotate(vec, dir));
+            const translation = vecSub(anchor, rotated[1]);
+            return rotated.map(vec => vecSum(vec, translation));
+        });
 
         const tmpStroke = canvasCtx.strokeStyle;
+        const tmpFill = canvasCtx.fillStyle;
         const tmpWidth = canvasCtx.lineWidth;
-        canvasCtx.strokeStyle = color;
-        canvasCtx.lineWidth = 5;
+
+        if (f_close) canvasCtx.strokeStyle = "#000";
+        else canvasCtx.strokeStyle = color;
+
+        canvasCtx.fillStyle = color;
+        canvasCtx.lineWidth = 2;
 
         for (const arrow of arrows) {
-            drawPath(canvasCtx, arrow, false, false);
+            if (!arrow) continue;
+            drawPath(canvasCtx, arrow, false, f_close);
         }
 
         canvasCtx.strokeStyle = tmpStroke;
+        canvasCtx.fillStyle = tmpFill;
         canvasCtx.lineWidth = tmpWidth;
     };
 
@@ -354,7 +337,10 @@ export default function Canvas({
 
         drawPath(canvasCtx, shape, area.isSelected, true);
         if (options.ids) drawText(canvasCtx, area.id.toString(), center, ID_SIZE, style.stroke);
-        if (options.arrows || tool === Tool.SET_DIRECTIONS) drawArrows(canvasCtx, shape, area.direction, style.stroke);
+
+        if (tool === Tool.SET_DIRECTIONS) drawArrows(canvasCtx, shape, area.direction, "#3e3", true);
+        else if (options.arrows) drawArrows(canvasCtx, shape, area.direction, style.stroke);
+
         if (area.isParking) drawParking(canvasCtx, shape, style.stroke);
 
         canvasCtx.lineWidth = tmp.lw;
