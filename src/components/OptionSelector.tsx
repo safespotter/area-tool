@@ -1,30 +1,32 @@
-import React from 'react';
-import { Options } from '../utilities/types';
-import { Button } from '@material-ui/core';
-import './OptionSelector.scss';
-import { ArrowUpward } from '@material-ui/icons';
+import React from "react";
+import { Options } from "../utilities/types";
+import "./OptionSelector.scss";
+import { ArrowUpward } from "@material-ui/icons";
 
 type OptionSelectorProps = {
-    options: Options;
-    updateOptions: (o: Options) => void;
+  options: Options;
+  updateOptions: (o: Options) => void;
 };
 
-export default function OptionSelector({ options, updateOptions }: OptionSelectorProps) {
-    return (
-        <div className="OptionSelector">
-            <Button
-                variant={options.ids ? "contained" : "outlined"}
-                onClick={() => updateOptions({ ...options, ids: !options.ids })}
-            >
-                IDs
-            </Button>
+export default function OptionSelector({
+  options,
+  updateOptions,
+}: OptionSelectorProps) {
+  return (
+    <div className="OptionSelector">
+      <button
+        className={`btn ${options.ids ? "contained" : "outlined"}`}
+        onClick={() => updateOptions({ ...options, ids: !options.ids })}
+      >
+        IDs
+      </button>
 
-            <Button
-                variant={options.arrows ? "contained" : "outlined"}
-                onClick={() => updateOptions({ ...options, arrows: !options.arrows })}
-            >
-                <ArrowUpward />
-            </Button>
-        </div>
-    );
+      <button
+        className={`btn ${options.arrows ? "contained" : "outlined"}`}
+        onClick={() => updateOptions({ ...options, arrows: !options.arrows })}
+      >
+        <ArrowUpward />
+      </button>
+    </div>
+  );
 }

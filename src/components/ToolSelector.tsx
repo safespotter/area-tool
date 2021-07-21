@@ -1,53 +1,74 @@
-import React from 'react';
-import { Tool } from '../utilities/types';
-import { Button } from '@material-ui/core';
-import './ToolSelector.scss';
+import React from "react";
+import { Tool } from "../utilities/types";
+import "./ToolSelector.scss";
 
 type ToolSelectorProps = {
-    value?: Tool;
-    onSelect?: () => void;
-    onAdd?: () => void;
-    onSetDirections?: () => void;
-    onToggleType?: () => void;
+  value?: Tool;
+  onSelect?: () => void;
+  onAdd?: () => void;
+  onSetDirections?: () => void;
+  onToggleType?: () => void;
 };
 
-export default function ToolSelector({ value, onSelect, onAdd, onSetDirections, onToggleType }: ToolSelectorProps) {
-    return (
-        <div className="ToolSelector">
-            {onAdd ? <Button
-                variant={value === Tool.ADD ? "contained" : "outlined"}
-                color="secondary"
-                onClick={onAdd}
-            >
-                ADD
-            </Button>
-                : ""}
+export default function ToolSelector({
+  value,
+  onSelect,
+  onAdd,
+  onSetDirections,
+  onToggleType,
+}: ToolSelectorProps) {
+  return (
+    <div className="ToolSelector">
+      {onAdd ? (
+        <button
+          className={`btn secondary ${
+            value === Tool.ADD ? "contained" : "outlined"
+          }`}
+          onClick={onAdd}
+        >
+          ADD
+        </button>
+      ) : (
+        ""
+      )}
 
-            {onSelect ? <Button
-                variant={value === Tool.SELECT ? "contained" : "outlined"}
-                color="secondary"
-                onClick={onSelect}
-            >
-                SELECT
-            </Button>
-                : ""}
-            {onSetDirections ? <Button
-                variant={value === Tool.SET_DIRECTIONS ? "contained" : "outlined"}
-                color="secondary"
-                onClick={onSetDirections}
-            >
-                DIRECTIONS
-            </Button>
-                : ""}
+      {onSelect ? (
+        <button
+          className={`btn secondary ${
+            value === Tool.SELECT ? "contained" : "outlined"
+          }`}
+          onClick={onSelect}
+        >
+          SELECT
+        </button>
+      ) : (
+        ""
+      )}
+      {onSetDirections ? (
+        <button
+          className={`btn secondary ${
+            value === Tool.SET_DIRECTIONS ? "contained" : "outlined"
+          }`}
+          onClick={onSetDirections}
+        >
+          DIRECTIONS
+        </button>
+      ) : (
+        ""
+      )}
 
-            {onToggleType ? <Button
-                variant={value === Tool.TOGGLE_TYPE ? "contained" : "outlined"}
-                color="secondary"
-                onClick={onToggleType}
-            >
-                TYPES
-            </Button>
-                : ""}
-        </div>
-    );
+      {onToggleType ? (
+        <button
+          className={`btn secondary ${
+            value === Tool.TOGGLE_TYPE ? "contained" : "outlined"
+          }`}
+          onClick={onToggleType}
+        >
+          TYPES
+        </button>
+      ) : (
+        ""
+      )}
+    </div>
+  );
 }

@@ -1,8 +1,7 @@
 .ToolSelector {
+  display: flex;
 
-    display: flex;
-
-    > * {
-        margin: 2pt !important;
-    }
+  > * {
+    margin: 2pt !important;
+  }
 }

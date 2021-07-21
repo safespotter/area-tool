@@ -1,5 +1,8 @@
-.App {
+* {
   box-sizing: border-box;
+}
+
+.App {
   min-height: 100vh;
   text-align: center;
   padding: 12pt;
@@ -14,11 +17,6 @@
     justify-content: space-evenly;
     padding: 6pt;
     max-width: 12rem;
-
-    button {
-      width: 100%;
-      margin: 2pt;
-    }
   }
 }
 
@@ -42,6 +40,93 @@
     .BlockButtons {
       flex-direction: row;
       max-width: 100%;
+    }
+  }
+}
+
+.btn {
+  display: flex;
+  font-size: 1rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  padding: 0 1.5rem;
+  justify-content: center;
+  align-items: center;
+  border-radius: 0.3rem;
+  border: 1px solid #0006;
+  background: #eee;
+  height: 2.5rem;
+  box-shadow: 0.3rem 0.3rem 0.3rem #0006;
+  position: relative;
+
+  &:hover {
+    background: #ccc;
+  }
+
+  &:active {
+    background: #fff;
+    box-shadow: inset 0.1rem 0.1rem 0.3rem #0006;
+  }
+
+  &.outlined {
+    background: none;
+    color: #ccc;
+    border: 3px solid;
+    box-shadow: none;
+
+    &:hover {
+      background: #ccc4;
+    }
+
+    &:active {
+      background: #fff6;
+    }
+  }
+
+  &.primary {
+    background: #5ae;
+    &:hover {
+      background: #48c;
+    }
+
+    &:active {
+      background: #8cf;
+    }
+    &.outlined {
+      background: none;
+      color: #5ae;
+
+      &:hover {
+        background: #48c4;
+      }
+
+      &:active {
+        background: #8cf4;
+      }
+    }
+  }
+
+  &.secondary {
+    background: #f66;
+    &:hover {
+      background: #c44;
+    }
+
+    &:active {
+      background: #f88;
+    }
+
+    &.outlined {
+      background: none;
+      color: #f66;
+
+      &:hover {
+        background: #c444;
+      }
+
+      &:active {
+        background: #f884;
+      }
     }
   }
 }
