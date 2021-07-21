@@ -45,15 +45,19 @@
   font-size: 1rem;
   font-weight: 500;
   text-transform: uppercase;
-  padding: 0 1.5rem;
+  padding: 0 0.5ch;
+  height: 2.5rem;
+  min-width: fit-content;
+  width: 10vw;
+  max-width: 16ch;
   justify-content: center;
   align-items: center;
   border-radius: 0.3rem;
   border: 1px solid #0006;
   background: #eee;
-  height: 2.5rem;
   box-shadow: 0.3rem 0.3rem 0.3rem #0006;
   position: relative;
+  margin: 0.1rem;
 
   &:hover {
     background: #ccc;
@@ -124,5 +128,14 @@
         background: #f884;
       }
     }
+  }
+}
+
+table {
+  .btn {
+    height: fit-content;
+    width: fit-content;
+    box-shadow: 0.1rem 0.1rem 0.1rem #0004;
+    margin: 0;
   }
 }
