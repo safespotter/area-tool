@@ -112,7 +112,9 @@ export function IOManager({ target, source, load }: IOMangerProps) {
       <button className="btn contained primary" onClick={download}>
         Download
       </button>
-      <a ref={dlRef} download={filename} hidden />
+      <a ref={dlRef} href="." download={filename} hidden>
+        hidden download link
+      </a>
     </div>
   );
 }

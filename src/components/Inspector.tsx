@@ -1,7 +1,5 @@
 import { Check, Clear, Delete } from '@material-ui/icons';
 import React, { useEffect, useState } from "react";
-import { order } from "../utilities/data";
-import { dot, vecSum } from "../utilities/shapes";
 import { Area, AreaDictionary, IIndexable, Vector } from "../utilities/types";
 
 import "./Inspector.scss";
@@ -31,10 +29,6 @@ export default function Inspector({
 
   useEffect(() => {
     const selected = target;
-
-    // let selected: Area[] = target.filter(a => a.isSelected);
-    // if (selected.length === 0)
-    //     selected = target;
 
     let list = selected.map((a) => a.toAreaDictionary());
 
