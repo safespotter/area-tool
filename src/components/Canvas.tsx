@@ -34,9 +34,9 @@ const alpha = 0.25;
 
 const style1 = {
   width: 2,
-  stroke: `rgb(250, 50, 50)`,
-  fill: `rgba(250, 50, 50, ${alpha})`,
-  arrow: `rgba(250, 50, 50, ${alpha * 2})`,
+  stroke: `rgb(255, 50, 50)`,
+  fill: `rgba(255, 50, 50, ${alpha})`,
+  arrow: `rgba(255, 50, 50, ${alpha * 2})`,
   selected: {
     width: 2,
     stroke: `rgb(255, 200, 50)`,
@@ -360,13 +360,13 @@ export default function Canvas({
 
     const shape = area.isSelected
       ? area.shape.map((p, i) => {
-          if (dragIndexes && dragIndexes.some((n) => n === i))
-            return snapToShapes(
-              vecSum(p, movement),
-              quads.filter((a) => a.id !== area.id).map((a) => a.shape)
-            );
-          else return p;
-        })
+        if (dragIndexes && dragIndexes.some((n) => n === i))
+          return snapToShapes(
+            vecSum(p, movement),
+            quads.filter((a) => a.id !== area.id).map((a) => a.shape)
+          );
+        else return p;
+      })
       : area.shape;
 
     const center = centroidOfShape(shape);
@@ -416,14 +416,17 @@ export default function Canvas({
       ta: canvasCtx.textAlign,
       tb: canvasCtx.textBaseline,
       fs: canvasCtx.fillStyle,
+      ss: canvasCtx.strokeStyle,
     };
 
     canvasCtx.font = `${size}px sans-serif`;
     canvasCtx.textAlign = "center";
     canvasCtx.textBaseline = "middle";
     canvasCtx.fillStyle = color;
+    canvasCtx.strokeStyle = "#000";
 
     canvasCtx.fillText(text, center[0], center[1]);
+    canvasCtx.strokeText(text, center[0], center[1]);
 
     canvasCtx.font = tmp.font;
     canvasCtx.textAlign = tmp.ta;

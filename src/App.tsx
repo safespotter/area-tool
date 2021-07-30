@@ -18,7 +18,7 @@ export default function App() {
     const [slider, setSlider] = useState<number | undefined>();
     const [quadList, setQuadList] = useState<Area[]>([]);
     const [tool, setTool] = useState<Tool>(Tool.ADD);
-    const [options, setOptions] = useState<Options>({ ids: true, arrows: true, });
+    const [options, setOptions] = useState<Options>({ ids: true, arrows: false, });
 
     useEffect(() => {
         if (file) {
