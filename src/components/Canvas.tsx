@@ -104,9 +104,6 @@ export default function Canvas({
       return;
     }
 
-    canvasH = canvas.height;
-    canvasW = canvas.width;
-
     // Background
     try {
       if (!img) throw Error;
@@ -614,8 +611,8 @@ export default function Canvas({
         onMouseUp={onMouseUp}
         onMouseLeave={onMouseLeave}
         onMouseMove={(e) => onMouseMove(e)}
-        width={width ?? CANVAS_W}
-        height={height ?? CANVAS_H}
+        width={CANVAS_W}
+        height={CANVAS_H}
         onKeyDown={(e) => {
           if (e.key === "Control") setModifier(true);
         }}
