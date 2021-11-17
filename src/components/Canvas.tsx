@@ -22,39 +22,81 @@ import {
 } from "../utilities/shapes";
 import { order } from "../utilities/data";
 
+const TOGGLE_SIDEWALK = 0;
+const TOGGLE_PARK = 1;
 const CANVAS_W = 1920;
 const CANVAS_H = 1080;
 const POINT_RADIUS = 5;
 const SNAP_DISTANCE = 25;
 // const ARROW_SCALE = .1;
 const ARROW_SIZE = 16;
+const ARROW_SIZE_SMALL = 10;
 const ID_SIZE = 48;
 
 const alpha = 0.25;
 
-const style1 = {
+const styleRoad = {
   width: 2,
-  stroke: `rgb(255, 50, 50)`,
-  fill: `rgba(255, 50, 50, ${alpha})`,
-  arrow: `rgba(255, 50, 50, ${alpha * 2})`,
+  stroke: `rgb(220, 80, 80)`,
+  fill: `rgba(220, 80, 80, ${alpha})`,
+  arrow: `rgba(220, 80, 80, ${alpha * 2})`,
   selected: {
     width: 2,
-    stroke: `rgb(255, 200, 50)`,
-    fill: `rgba(255, 200, 50, ${alpha})`,
-    arrow: `rgba(255, 200, 50, ${alpha * 2})`,
+    stroke: `rgb(255, 130, 130)`,
+    fill: `rgba(255, 130, 130, ${alpha})`,
+    arrow: `rgba(255, 130, 130, ${alpha * 2})`,
   },
 };
 
-const style2 = {
+const styleSidewalk = {
   width: 2,
-  stroke: `rgb(50, 50, 250)`,
-  fill: `rgba(50, 50, 250, ${alpha})`,
-  arrow: `rgba(50, 50, 250, ${alpha * 2})`,
+  stroke: `rgb(50, 100, 250)`,
+  fill: `rgba(50, 100, 250, ${alpha})`,
+  arrow: `rgba(50, 100, 250, ${alpha * 2})`,
   selected: {
     width: 2,
-    stroke: `rgb(50, 250, 250)`,
-    fill: `rgba(50, 250, 250, ${alpha})`,
-    arrow: `rgba(50, 250, 250, ${alpha * 2})`,
+    stroke: `rgb(50, 200, 250)`,
+    fill: `rgba(50, 200, 250, ${alpha})`,
+    arrow: `rgba(50, 200, 250, ${alpha * 2})`,
+  },
+};
+
+const styleParking = {
+  width: 2,
+  stroke: `rgb(200, 170, 0)`,
+  fill: `rgba(240, 190, 0, ${alpha})`,
+  arrow: `rgba(200, 170, 0, ${alpha * 2})`,
+  selected: {
+    width: 2,
+    stroke: `rgb(255, 215, 50)`,
+    fill: `rgba(255, 250, 50, ${alpha})`,
+    arrow: `rgba(255, 215, 50, ${alpha * 2})`,
+  },
+};
+
+const styleSidewalkParking = {
+  width: 2,
+  stroke: `rgb(50, 200, 50)`,
+  fill: `rgba(50, 200, 50, ${alpha})`,
+  arrow: `rgba(50, 200, 50, ${alpha * 2})`,
+  selected: {
+    width: 2,
+    stroke: `rgb(100, 240, 100)`,
+    fill: `rgba(100, 255, 100, ${alpha})`,
+    arrow: `rgba(100, 240, 100, ${alpha * 2})`,
+  },
+};
+
+const styleZebra = {
+  width: 2,
+  stroke: `rgb(150, 150, 150)`,
+  fill: `rgba(150, 150, 150, ${alpha})`,
+  arrow: `rgba(150, 150, 150, ${alpha * 2})`,
+  selected: {
+    width: 2,
+    stroke: `rgb(230, 230, 230)`,
+    fill: `rgba(230, 230, 230, ${alpha})`,
+    arrow: `rgba(230, 230, 230, ${alpha * 2})`,
   },
 };
 
@@ -130,9 +172,9 @@ export default function Canvas({
         if (points.length === 3) {
           close = true;
         }
-        context.lineWidth = style1.width;
-        context.strokeStyle = style1.stroke;
-        context.fillStyle = style1.fill;
+        context.lineWidth = styleRoad.width;
+        context.strokeStyle = styleRoad.stroke;
+        context.fillStyle = styleRoad.fill;
         drawPath(context, path, true, close);
       }
     }
@@ -258,38 +300,21 @@ export default function Canvas({
     canvasCtx.strokeStyle = tmpStroke;
   };
 
-  const drawParking = (
-    canvasCtx: CanvasRenderingContext2D,
-    quad: Vector[],
-    color = "#000"
-  ) => {
-    if (quad.length !== 4) return;
-
-    const tmpStroke = canvasCtx.strokeStyle;
-    const tmpWidth = canvasCtx.lineWidth;
-    canvasCtx.strokeStyle = color;
-    canvasCtx.lineWidth = 3;
-
-    drawPath(canvasCtx, [quad[0], quad[2]], false, false);
-    drawPath(canvasCtx, [quad[1], quad[3]], false, false);
-
-    canvasCtx.strokeStyle = tmpStroke;
-    canvasCtx.lineWidth = tmpWidth;
-  };
-
   const drawArrows = (
     canvasCtx: CanvasRenderingContext2D,
     quad: Vector[],
     directions: { left: boolean; up: boolean; right: boolean; down: boolean },
     color = "#000",
-    f_close = false
+    f_highlight = false
   ) => {
     let arrow: Shape = [
       [-0.7, -1],
       [0, 1],
       [0.7, -1],
     ];
-    arrow = arrow.map((vec) => vecScale(vec, ARROW_SIZE));
+    arrow = arrow.map((vec) =>
+      vecScale(vec, f_highlight ? ARROW_SIZE : ARROW_SIZE_SMALL)
+    );
 
     const topMid = centroidOfShape([quad[0], quad[1]]);
     const botMid = centroidOfShape([quad[2], quad[3]]);
@@ -332,7 +357,7 @@ export default function Canvas({
     const tmpFill = canvasCtx.fillStyle;
     const tmpWidth = canvasCtx.lineWidth;
 
-    if (f_close) canvasCtx.strokeStyle = "#000";
+    if (f_highlight) canvasCtx.strokeStyle = "#000";
     else canvasCtx.strokeStyle = color;
 
     canvasCtx.fillStyle = color;
@@ -340,7 +365,7 @@ export default function Canvas({
 
     for (const arrow of arrows) {
       if (!arrow) continue;
-      drawPath(canvasCtx, arrow, false, f_close);
+      drawPath(canvasCtx, arrow, false, true);
     }
 
     canvasCtx.strokeStyle = tmpStroke;
@@ -357,22 +382,31 @@ export default function Canvas({
 
     const shape = area.isSelected
       ? area.shape.map((p, i) => {
-        if (dragIndexes && dragIndexes.some((n) => n === i))
-          return snapToShapes(
-            vecSum(p, movement),
-            quads.filter((a) => a.id !== area.id).map((a) => a.shape)
-          );
-        else return p;
-      })
+          if (dragIndexes && dragIndexes.some((n) => n === i))
+            return snapToShapes(
+              vecSum(p, movement),
+              quads.filter((a) => a.id !== area.id).map((a) => a.shape)
+            );
+          else return p;
+        })
       : area.shape;
 
     const center = centroidOfShape(shape);
 
     let style;
     if (area.isCarWalkable) {
-      style = style1;
+      if (area.isParking) style = styleParking;
+      else style = styleRoad;
     } else {
-      style = style2;
+      if (area.isParking) style = styleSidewalkParking;
+      else if (
+        area.direction.up ||
+        area.direction.left ||
+        area.direction.right ||
+        area.direction.down
+      )
+        style = styleZebra;
+      else style = styleSidewalk;
     }
     if (area.isSelected) style = style.selected;
 
@@ -394,7 +428,7 @@ export default function Canvas({
     else if (options.arrows)
       drawArrows(canvasCtx, shape, area.direction, style.stroke);
 
-    if (area.isParking) drawParking(canvasCtx, shape, style.stroke);
+    // if (area.isParking) drawParking(canvasCtx, shape, style.stroke);
 
     canvasCtx.lineWidth = tmp.lw;
     canvasCtx.strokeStyle = tmp.ss;
@@ -487,71 +521,96 @@ export default function Canvas({
     }
   };
 
-  const handleSetDirections = () => {
+  const handleSetDirections = (all = false) => {
     const pos = [mouse.x, mouse.y] as Vector;
     const targetArea = quads.find((q) => isPointInShape(pos, q.shape));
     if (!targetArea) return;
 
-    const shape = targetArea.shape;
-    const center = centroidOfShape(shape);
-    const sectors = {
-      up: [shape[0], shape[1], center] as Shape,
-      down: [shape[2], shape[3], center] as Shape,
-      right: [shape[1], shape[2], center] as Shape,
-      left: [shape[3], shape[0], center] as Shape,
-    };
-
-    const selectedDir: DirKeys | null = (() => {
-      for (const [k, v] of Object.entries(sectors)) {
-        if (isPointInShape(pos, v)) return k as DirKeys;
+    if (all) {
+      const newState = !Object.values(targetArea.direction).every((x) => x);
+      for (const key of Object.keys(targetArea.direction)) {
+        targetArea.direction[key as DirKeys] = newState;
       }
-      return null;
-    })();
-
-    if (!selectedDir) return;
-
-    targetArea.direction[selectedDir] = !targetArea.direction[selectedDir];
-
-    updateQuads([targetArea]);
-  };
-
-  const handleToggleType = () => {
-    const pos = [mouse.x, mouse.y] as Vector;
-    const targetArea = quads.find((q) => isPointInShape(pos, q.shape));
-    if (!targetArea) return;
-
-    if (targetArea.isCarWalkable) {
-      targetArea.isCarWalkable = false;
-      targetArea.direction = {
-        up: false,
-        right: false,
-        left: false,
-        down: false,
-      };
     } else {
-      targetArea.isCarWalkable = true;
-      targetArea.direction = { up: true, right: true, left: true, down: true };
+      const shape = targetArea.shape;
+      const center = centroidOfShape(shape);
+      const sectors = {
+        up: [shape[0], shape[1], center] as Shape,
+        down: [shape[2], shape[3], center] as Shape,
+        right: [shape[1], shape[2], center] as Shape,
+        left: [shape[3], shape[0], center] as Shape,
+      };
+
+      const selectedDir: DirKeys | null = (() => {
+        for (const [k, v] of Object.entries(sectors)) {
+          if (isPointInShape(pos, v)) return k as DirKeys;
+        }
+        return null;
+      })();
+
+      if (!selectedDir) return;
+
+      targetArea.direction[selectedDir] = !targetArea.direction[selectedDir];
     }
 
     updateQuads([targetArea]);
   };
 
-  const onMouseDown = () => {
-    switch (tool) {
-      case Tool.ADD:
-        addPoint();
+  const handleToggleType = (version = TOGGLE_SIDEWALK) => {
+    const pos = [mouse.x, mouse.y] as Vector;
+    const targetArea = quads.find((q) => isPointInShape(pos, q.shape));
+    if (!targetArea) return;
+
+    switch (version) {
+      case TOGGLE_SIDEWALK:
+        if (targetArea.isCarWalkable) {
+          targetArea.isCarWalkable = false;
+        } else {
+          targetArea.isCarWalkable = true;
+        }
         break;
-      case Tool.SELECT:
-        handleSelect();
+      case TOGGLE_PARK:
+        if (targetArea.isParking) {
+          targetArea.isParking = false;
+        } else {
+          targetArea.isParking = true;
+        }
         break;
-      case Tool.SET_DIRECTIONS:
-        handleSetDirections();
+    }
+
+    updateQuads([targetArea]);
+  };
+
+  const onMouseDown = (e: React.MouseEvent) => {
+    switch (e.button) {
+      case 0:
+        switch (tool) {
+          case Tool.ADD:
+            addPoint();
+            break;
+          case Tool.SELECT:
+            handleSelect();
+            break;
+          case Tool.SET_DIRECTIONS:
+            handleSetDirections();
+            break;
+          case Tool.TOGGLE_TYPE:
+            handleToggleType(TOGGLE_SIDEWALK);
+            break;
+          default:
+            throw Error("Tool not implemented");
+        }
         break;
-      case Tool.TOGGLE_TYPE:
-        handleToggleType();
+      case 2:
+        switch (tool) {
+          case Tool.TOGGLE_TYPE:
+            handleToggleType(TOGGLE_PARK);
+            break;
+          case Tool.SET_DIRECTIONS:
+            handleSetDirections(true);
+            break;
+        }
         break;
-      default:
-        throw Error("Tool not implemented");
     }
   };
 
@@ -560,14 +619,16 @@ export default function Canvas({
       const selectedAreas = quads.filter((a) => a.isSelected);
       const movement: Vector = [mouse.x! - oldMouse[0], mouse.y! - oldMouse[1]];
       const updated = selectedAreas.map((a) => {
-        a.shape = a.shape.map((p, i) => {
-          if (dragIndexes && dragIndexes.some((n) => n === i))
-            return snapToShapes(
-              vecSum(p, movement),
-              quads.filter((b) => b.id !== a.id).map((b) => b.shape)
-            );
-          else return p;
-        });
+        a.shape = order(
+          a.shape.map((p, i) => {
+            if (dragIndexes && dragIndexes.some((n) => n === i))
+              return snapToShapes(
+                vecSum(p, movement),
+                quads.filter((b) => b.id !== a.id).map((b) => b.shape)
+              );
+            else return p;
+          })
+        );
         return a;
       });
       updateQuads(updated);
@@ -610,7 +671,8 @@ export default function Canvas({
         onMouseDown={onMouseDown}
         onMouseUp={onMouseUp}
         onMouseLeave={onMouseLeave}
-        onMouseMove={(e) => onMouseMove(e)}
+        onMouseMove={onMouseMove}
+        onContextMenu={(e) => e.preventDefault()}
         width={CANVAS_W}
         height={CANVAS_H}
         onKeyDown={(e) => {

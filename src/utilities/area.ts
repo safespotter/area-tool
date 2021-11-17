@@ -8,10 +8,10 @@ export class Area {
   public shape: Shape;
   public isCarWalkable = true;
   public direction = {
-    left: true,
-    up: true,
-    right: true,
-    down: true,
+    left: false,
+    up: false,
+    right: false,
+    down: false,
   };
   public isParking = false;
   public stop: string | null = null;
