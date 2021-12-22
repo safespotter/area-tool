@@ -20,7 +20,6 @@ import {
   centroidOfShape,
   vecNegative,
 } from "../utilities/shapes";
-import { order } from "../utilities/data";
 
 const TOGGLE_SIDEWALK = 0;
 const TOGGLE_PARK = 1;
@@ -156,7 +155,8 @@ export default function Canvas({
     }
 
     // Finished Quads
-    for (const quad of quads) {
+    for (let i = quads.length - 1; i >= 0; i--) {
+      const quad = quads[i];
       drawArea(context, quad);
     }
 
@@ -253,7 +253,8 @@ export default function Canvas({
     const updatedShape = [pos, ...points];
 
     if (updatedShape.length === 4) {
-      const newArea = new Area(order(updatedShape));
+      const newArea = new Area(updatedShape);
+      newArea.order();
       newArea.isSelected = true;
       setSelected(-1);
       newQuad(newArea);
@@ -282,14 +283,19 @@ export default function Canvas({
     canvasCtx.stroke();
 
     if (f_drawPoints) {
-      for (const p of points) drawPoint(canvasCtx, p);
+      points.forEach((p, i) => drawPoint(canvasCtx, p, i));
     }
   };
 
-  const drawPoint = (canvasCtx: CanvasRenderingContext2D, point: Vector) => {
+  const drawPoint = (
+    canvasCtx: CanvasRenderingContext2D,
+    point: Vector,
+    index = 2
+  ) => {
     const tmpFill = canvasCtx.fillStyle;
     const tmpStroke = canvasCtx.strokeStyle;
-    canvasCtx.fillStyle = "#5f5";
+    const fillStyles = ["#fff", "#f55", "#5f5", "#55f"];
+    canvasCtx.fillStyle = fillStyles[index];
     canvasCtx.strokeStyle = "#000";
     canvasCtx.beginPath();
     canvasCtx.arc(point[0], point[1], POINT_RADIUS, 0, 2 * 3.15);
@@ -619,18 +625,17 @@ export default function Canvas({
       const selectedAreas = quads.filter((a) => a.isSelected);
       const movement: Vector = [mouse.x! - oldMouse[0], mouse.y! - oldMouse[1]];
       const updated = selectedAreas.map((a) => {
-        a.shape = order(
-          a.shape.map((p, i) => {
-            if (dragIndexes && dragIndexes.some((n) => n === i))
-              return snapToShapes(
-                vecSum(p, movement),
-                quads.filter((b) => b.id !== a.id).map((b) => b.shape)
-              );
-            else return p;
-          })
-        );
+        a.shape = a.shape.map((p, i) => {
+          if (dragIndexes && dragIndexes.some((n) => n === i))
+            return snapToShapes(
+              vecSum(p, movement),
+              quads.filter((b) => b.id !== a.id).map((b) => b.shape)
+            );
+          else return p;
+        });
         return a;
       });
+      updated.forEach((a) => a.order());
       updateQuads(updated);
       setDragging(false);
       setDragIndexes(null);

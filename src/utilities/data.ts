@@ -5,39 +5,27 @@ export function order(s: Shape) {
   const X = 0;
   const Y = 1;
 
-  let lu = [...s]
-    .sort((a, b) => (a[Y] < b[Y] ? -1 : 1))
-    .slice(0, 2)
-    .sort((a, b) => (a[X] < b[X] ? -1 : 1))[0];
-  let i_lu = s.findIndex((p) => p === lu);
+  const firstP = s[0];
+  const rightP = s[1];
+  const leftP = s[3];
 
-  const ordered: Shape = [];
-  const firstP = s[i_lu];
-  const nextP = s[(i_lu + 1) % s.length];
-  const prevP = s[(i_lu + s.length - 1) % s.length];
-
-  const center = vecScale(vecSum(vecSum(firstP, nextP), prevP), 1 / 3);
+  const opposite = s[2];
 
   // y axis is inverted in images, so this formula is inverted too
-  const clockwisePerpendicular: Vector = [
-    -(firstP[Y] - center[Y]),
-    firstP[X] - center[X],
+  const rightDir: Vector = [
+    -(firstP[Y] - opposite[Y]),
+    firstP[X] - opposite[X],
   ];
 
   if (
-    dot(vecSub(nextP, center), clockwisePerpendicular) >
-    dot(vecSub(prevP, center), clockwisePerpendicular)
+    dot(vecSub(rightP, opposite), rightDir) <
+    dot(vecSub(leftP, opposite), rightDir)
   ) {
-    for (let i = 0; i < s.length; i++) {
-      const p = s[(i_lu + i) % s.length];
-      ordered.push([...p]);
-    }
-  } else {
-    for (let i = 0; i < s.length; i++) {
-      const p = s[(i_lu + s.length - i) % s.length];
-      ordered.push([...p]);
-    }
+    const tmp = s[1];
+    s[1] = s[3];
+    s[3] = tmp;
+    return true;
   }
 
-  return ordered;
+  return false;
 }

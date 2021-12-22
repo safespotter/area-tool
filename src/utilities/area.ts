@@ -31,16 +31,29 @@ export class Area {
     return Area.counter++;
   }
 
+  order(): void {
+    const order_changed = order(this.shape);
+    if (order_changed) {
+      let tmp = this.direction.left;
+      this.direction.left = this.direction.up;
+      this.direction.up = tmp;
+
+      tmp = this.direction.right;
+      this.direction.right = this.direction.down;
+      this.direction.down = tmp;
+    }
+  }
+
   toAreaDictionary(): AreaDictionary {
-    const points = order(this.shape);
+    this.order();
     const dir = this.direction ?? [0, 0];
     return {
       id: this.id,
       points: {
-        lu: points[0].map((x) => Math.round(x)) as Vector,
-        ru: points[1].map((x) => Math.round(x)) as Vector,
-        rb: points[2].map((x) => Math.round(x)) as Vector,
-        lb: points[3].map((x) => Math.round(x)) as Vector,
+        lu: this.shape[0].map((x) => Math.round(x)) as Vector,
+        ru: this.shape[1].map((x) => Math.round(x)) as Vector,
+        rb: this.shape[2].map((x) => Math.round(x)) as Vector,
+        lb: this.shape[3].map((x) => Math.round(x)) as Vector,
       },
       carWalk: this.isCarWalkable,
       dir: { ...this.direction },
